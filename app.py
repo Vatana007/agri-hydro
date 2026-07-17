@@ -16,7 +16,7 @@ import json
 import random
 import threading
 import requests
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 
 # ================== កំណត់តម្លៃទូទៅ (Configuration) ==================
 GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyUGmBiRx5rsVDoqlxBs99oBcN-QILD6LIuBlTo-J_ei1lkO19oaNsHWbTzfzNOuyfF/exec"
@@ -99,6 +99,11 @@ def index():
     except Exception as e:
         print(f"❌ Failed to read index.html: {str(e)}")
         return f"❌ Error loading index.html: {str(e)}", 500
+
+@web_app.route('/manifest.json')
+def serve_manifest():
+    """Serve Manifest for PWA"""
+    return send_from_directory('static', 'manifest.json')
 
 @web_app.route('/api/status', methods=['GET'])
 def get_status():
