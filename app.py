@@ -318,6 +318,29 @@ def handle_new_messages(updates):
         if chat_id != CHAT_ID:
             continue
             
+        # ពិនិត្យមើលសមាជិកថ្មីចូលរួមក្រុម (Check for new members joining the group)
+        new_members = message.get("new_chat_members")
+        if new_members:
+            for member in new_members:
+                # មិនបាច់ស្វាគមន៍ Bot ផ្សេងទៀត ឬខ្លួនឯងទេ (Skip other bots)
+                if member.get("is_bot"):
+                    continue
+                first_name = member.get("first_name", "សមាជិកថ្មី")
+                welcome = (
+                    f"👋 *សួស្តី {first_name}!* ស្វាគមន៍មកកាន់ក្រុមរបស់ពួកយើង។\n\n"
+                    "🌱 នេះជាបញ្ជីពាក្យបញ្ជារបស់ *NFT Hydroponic Bot* ដែលអ្នកអាចប្រើប្រាស់បាន៖\n\n"
+                    "📋 *ពាក្យបញ្ជាដែលមាន៖*\n"
+                    "🔷 /status : ពិនិត្យមើលទិន្នន័យទូទៅ (សាធារណៈ)\n"
+                    "🔷 /auto : បើកមុខងារស្វ័យប្រវត្ត (ការពារ)\n"
+                    "🔷 /manual : បើកមុខងារបញ្ជាដោយដៃ (ការពារ)\n"
+                    "🔷 /fanon : បើកកង្ហារ (ការពារ)\n"
+                    "🔷 /fanoff : បិទកង្ហារ (ការពារ)\n"
+                    "🔷 /pumpon : បើកម៉ូទ័រទឹក (ការពារ)\n"
+                    "🔷 /pumpoff : បិទម៉ូទ័រទឹក (ការពារ)\n"
+                )
+                send_telegram_message(welcome)
+            continue
+            
         text = message.get("text", "")
         # ដកឈ្មោះ Bot ចេញ ប្រសិនបើរត់ក្នុង Group (ឧទាហរណ៍៖ "/status@agri_hydro_bot" -> "/status")
         if "@" in text:
