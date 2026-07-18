@@ -1,400 +1,654 @@
 <!DOCTYPE html>
-<html lang="km">
+<html lang="km" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>ប្រព័ន្ធដំណាំ Agri Hydro</title>
+  <title>ប្រព័ន្ធគ្រប់គ្រង Agri Hydro - DUC (Clean Tech)</title>
   
   <!-- PWA Manifest & App Config -->
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#050811">
-  <link rel="apple-touch-icon" href="/static/logo.png">
+  <meta name="theme-color" content="#030712">
+  <link rel="apple-touch-icon" href="/static/DUC.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
   
-  <link rel="icon" type="image/png" href="/static/logo.png">
+  <link rel="icon" type="image/png" href="/static/DUC.png">
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
+    }
+  </script>
   <!-- Google Fonts: Kantumruy Pro & Outfit -->
   <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- Vue 3 CDN -->
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    html {
-      font-size: 104%; /* Base typography scale */
+    /* CSS Variables for Light / Dark Themes */
+    :root {
+      --bg-color: #f1f5f9;
+      --bg-radial: 
+        radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 45%),
+        radial-gradient(circle at 90% 10%, rgba(59, 130, 246, 0.05) 0%, transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.03) 0%, transparent 50%);
+      --text-color: #1e293b;
+      --text-muted: #64748b;
+      --panel-bg: rgba(255, 255, 255, 0.7);
+      --panel-bg-premium: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(241, 245, 249, 0.9) 100%);
+      --panel-border: rgba(15, 23, 42, 0.08);
+      --panel-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+      --inner-card-bg: rgba(15, 23, 42, 0.03);
+      --inner-card-border: rgba(15, 23, 42, 0.05);
+      --switch-bg: #cbd5e1;
+      --slider-bg: #e2e8f0;
+      
+      --console-bg: #0f172a;
+      --console-border: #1e293b;
+      --console-text: #10b981;
+      --console-timestamp: #64748b;
     }
+
+    .dark {
+      --bg-color: #030712;
+      --bg-radial: 
+        radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.08) 0%, transparent 45%),
+        radial-gradient(circle at 90% 10%, rgba(59, 130, 246, 0.08) 0%, transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.05) 0%, transparent 50%);
+      --text-color: #f3f4f6;
+      --text-muted: #94a3b8;
+      --panel-bg: rgba(10, 15, 30, 0.7);
+      --panel-bg-premium: linear-gradient(135deg, rgba(13, 20, 38, 0.8) 0%, rgba(5, 10, 24, 0.9) 100%);
+      --panel-border: rgba(255, 255, 255, 0.06);
+      --panel-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+      --inner-card-bg: rgba(0, 0, 0, 0.4);
+      --inner-card-border: rgba(255, 255, 255, 0.03);
+      --switch-bg: #1f2937;
+      --slider-bg: #111827;
+      
+      --console-bg: #030712;
+      --console-border: #111827;
+      --console-text: #34d399;
+      --console-timestamp: #4b5563;
+    }
+
     body {
       font-family: 'Kantumruy Pro', 'Outfit', sans-serif;
-      background-color: #050811;
-      background-image: radial-gradient(circle at 5% 5%, rgba(16, 185, 129, 0.08) 0%, transparent 35%),
-                        radial-gradient(circle at 95% 5%, rgba(59, 130, 246, 0.08) 0%, transparent 35%),
-                        radial-gradient(circle at 50% 90%, rgba(99, 102, 241, 0.05) 0%, transparent 40%);
+      background-color: var(--bg-color);
+      background-image: var(--bg-radial);
       background-attachment: fixed;
+      color: var(--text-color);
+      transition: background-color 0.4s ease, color 0.3s ease;
     }
-    .neon-border-emerald {
-      box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
-      border: 1px solid rgba(16, 185, 129, 0.3);
+    [v-cloak] { display: none !important; }
+
+    /* Custom Scrollbar for Hacker Console & Settings */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
     }
-    .neon-border-blue {
-      box-shadow: 0 0 15px rgba(59, 130, 246, 0.15);
-      border: 1px solid rgba(59, 130, 246, 0.3);
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.02);
     }
-    .glass-card {
-      background: rgba(10, 15, 30, 0.7);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
     }
-    .glass-card-premium {
-      background: linear-gradient(135deg, rgba(16, 22, 46, 0.8) 0%, rgba(10, 14, 30, 0.85) 100%);
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(16, 185, 129, 0.3);
+    }
+
+    /* Premium Glassmorphism styling using CSS Variables */
+    .glass-panel {
+      background: var(--panel-bg);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.07);
+      border: 1px solid var(--panel-border);
+      box-shadow: var(--panel-shadow);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .text-glow-emerald {
-      text-shadow: 0 0 10px rgba(52, 211, 153, 0.5);
-    }
-    .text-glow-blue {
-      text-shadow: 0 0 10px rgba(96, 165, 250, 0.5);
-    }
-    
-    /* Animation for fan spinning */
-    @keyframes spin-slow {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-    .animate-spin-slow {
-      animation: spin-slow 1.5s linear infinite;
+    .glass-panel:hover {
+      border-color: rgba(16, 185, 129, 0.25);
+      transform: translateY(-2px);
     }
     
-    /* Animation for water pulse inside tube */
+    .glass-panel-premium {
+      background: var(--panel-bg-premium);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--panel-border);
+      box-shadow: var(--panel-shadow);
+    }
+
+    /* Active neon glows */
+    .glow-active-emerald {
+      box-shadow: 0 0 25px rgba(16, 185, 129, 0.15), inset 0 0 15px rgba(16, 185, 129, 0.05);
+      border: 1px solid rgba(16, 185, 129, 0.4) !important;
+      background: rgba(16, 185, 129, 0.06) !important;
+    }
+    .glow-active-blue {
+      box-shadow: 0 0 25px rgba(59, 130, 246, 0.15), inset 0 0 15px rgba(59, 130, 246, 0.05);
+      border: 1px solid rgba(59, 130, 246, 0.4) !important;
+      background: rgba(59, 130, 246, 0.06) !important;
+    }
+
+    /* iOS-Style Switches */
+    .switch-checkbox:checked + .switch-label {
+      background: linear-gradient(to right, #10b981, #059669);
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+    }
+    .switch-checkbox:checked + .switch-label .switch-button {
+      transform: translateX(18px);
+    }
+    
+    .switch-blue:checked + .switch-label {
+      background: linear-gradient(to right, #3b82f6, #1d4ed8);
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+    }
+
+    /* Custom range inputs */
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 2px solid #10b981;
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+      cursor: pointer;
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+      background: #e2fdf5;
+    }
+
+    /* Wave effect inside Water Tank */
+    .water-tank-wrapper {
+      box-shadow: inset 0 8px 16px rgba(0,0,0,0.4), 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .wave-container {
+      position: absolute;
+      width: 100%;
+      bottom: 0;
+      transition: height 1s cubic-bezier(0.4, 0, 0.2, 1);
+      background: linear-gradient(180deg, rgba(59, 130, 246, 0.3) 0%, rgba(29, 78, 216, 0.6) 100%);
+      overflow: hidden;
+      border-radius: 0 0 20px 20px;
+    }
+    .wave {
+      position: absolute;
+      width: 240%;
+      height: 240%;
+      background: rgba(59, 130, 246, 0.7);
+      top: -190%;
+      left: -70%;
+      border-radius: 38%;
+      animation: wave-spin 12s linear infinite;
+    }
+    .wave-second {
+      background: rgba(30, 64, 175, 0.4);
+      border-radius: 36%;
+      animation: wave-spin 8s linear infinite;
+      top: -182%;
+    }
+    .wave-danger {
+      background: rgba(239, 68, 68, 0.7) !important;
+    }
+    .wave-danger-second {
+      background: rgba(185, 28, 28, 0.4) !important;
+    }
+    @keyframes wave-spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Flowing Dash Line animation */
     @keyframes flow {
       0% { stroke-dashoffset: 40; }
       100% { stroke-dashoffset: 0; }
     }
     .animate-flow {
-      stroke-dasharray: 8, 4;
+      stroke-dasharray: 6, 4;
       animation: flow 1s linear infinite;
     }
+
+    /* Slow rotating animation */
+    @keyframes spin-slow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .animate-spin-slow {
+      animation: spin-slow 2.5s linear infinite;
+    }
+
+    /* Pulsing Soft Glow for plants */
+    @keyframes pulse-glow {
+      0%, 100% { filter: drop-shadow(0 0 2px rgba(16, 185, 129, 0.4)); transform: scale(1); }
+      50% { filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.7)); transform: scale(1.05); }
+    }
+    .plant-glow {
+      animation: pulse-glow 3s ease-in-out infinite;
+      transform-origin: center;
+    }
+
+    /* Water bubbles rising */
+    @keyframes bubble-rise {
+      0% { transform: translateY(20px) translateX(0); opacity: 0; }
+      50% { opacity: 0.6; }
+      100% { transform: translateY(-90px) translateX(var(--random-x, 8px)); opacity: 0; }
+    }
+    .bubble {
+      animation: bubble-rise 2.5s ease-in-out infinite;
+    }
+    .bubble-1 { --random-x: -10px; animation-delay: 0.2s; left: 25%; }
+    .bubble-2 { --random-x: 12px; animation-delay: 0.8s; left: 55%; }
+    .bubble-3 { --random-x: -6px; animation-delay: 1.5s; left: 80%; }
   </style>
 </head>
-<body class="text-gray-100 min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col antialiased">
 
-  <div id="app" class="flex-grow container mx-auto px-4 py-6 max-w-6xl" v-cloak>
+  <div id="app" class="flex-grow container mx-auto px-4 py-6 max-w-7xl" v-cloak>
     
-    <!-- Top Nav / Control Bar -->
-    <header class="flex flex-col lg:flex-row justify-between items-center mb-8 pb-6 border-b border-gray-800/80 gap-6">
-      <!-- Title Area -->
-      <div class="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-4">
-        <div class="p-2 bg-gradient-to-tr from-emerald-500/20 to-teal-500/20 rounded-2xl border border-emerald-500/30 text-emerald-400 glow-green w-fit flex items-center justify-center">
-          <img src="./static/logo.png" alt="Agri-Hidro Logo" class="w-9 h-9 sm:w-11 sm:h-11 object-contain drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]">
+    <!-- Header / Premium Nav bar -->
+    <header class="glass-panel-premium rounded-3xl p-5 mb-6 flex flex-col md:flex-row justify-between items-center gap-6">
+      
+      <!-- Left side: Title, Logo and Version -->
+      <div class="flex items-center gap-5">
+        <div class="relative flex items-center justify-center">
+          <img src="/static/DUC.png" alt="Logo DUC" class="w-16 h-16 object-contain">
+          <span class="absolute top-0 right-0 flex h-3.5 w-3.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500"></span>
+          </span>
         </div>
-        <div class="flex flex-col items-center sm:items-start">
-          <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-            <h1 class="text-lg sm:text-2xl font-bold tracking-tight bg-gradient-to-r from-emerald-400 via-teal-300 to-blue-400 bg-clip-text text-transparent leading-tight">
+        <div>
+          <div class="flex items-center gap-2.5">
+            <h1 class="text-xl sm:text-2xl font-bold tracking-tight bg-gradient-to-r from-emerald-600 via-teal-600 to-blue-600 dark:from-emerald-400 dark:via-teal-400 dark:to-blue-500 bg-clip-text text-transparent leading-tight">
               Agri Hydro Center
             </h1>
-            <span class="text-[9px] sm:text-[10px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-semibold">
-              v2.5 PRO
+            <span class="text-[9px] bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+              v3.0 PRO
             </span>
           </div>
-          <p class="text-[11px] sm:text-xs text-gray-400 font-medium mt-1">ប្រព័ន្ធដំណាំ Agri Hydro កម្រិតខ្ពស់</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-1">ប្រព័ន្ធដំណាំអុីដ្រូផូនិចស្វ័យប្រវត្តិ (NFT Hydroponics)</p>
         </div>
       </div>
       
-      <!-- System Stats Info -->
-      <div class="flex flex-wrap justify-center items-center gap-4">
-        <!-- Date / Time -->
-        <div class="hidden sm:flex items-center space-x-2 px-4 py-2 rounded-xl bg-gray-900/40 border border-gray-800 text-xs text-gray-400">
-          <i data-lucide="clock" class="w-4 h-4 text-emerald-400"></i>
+      <!-- Right side: Theme Switch, Clock, Connection status -->
+      <div class="flex flex-wrap items-center gap-4">
+        <!-- Theme Toggle Button -->
+        <button @click="toggleTheme" 
+                class="flex items-center justify-center p-2.5 rounded-2xl bg-white dark:bg-slate-900/50 border border-slate-300/60 dark:border-slate-800 text-slate-600 dark:text-yellow-400 shadow-sm hover:scale-105 transition-transform"
+                title="ប្តូររចនាបថ Brightness">
+          <i :data-lucide="isDark ? 'sun' : 'moon'" class="w-4.5 h-4.5"></i>
+        </button>
+
+        <!-- System Time -->
+        <div class="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900/50 border border-slate-300/60 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-300 font-semibold shadow-sm">
+          <i data-lucide="clock" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></i>
           <span>{{ currentTime }}</span>
         </div>
 
-        <!-- Connection Indicator -->
-        <div class="flex items-center space-x-3 px-4 py-2 rounded-xl bg-gray-900/60 border border-gray-800">
+        <!-- Connection Status -->
+        <div class="flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900/50 border border-slate-300/60 dark:border-slate-800 shadow-sm">
           <span class="relative flex h-2.5 w-2.5">
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
                   :class="isOnline ? 'bg-emerald-400' : 'bg-red-400'"></span>
             <span class="relative inline-flex rounded-full h-2.5 w-2.5"
                   :class="isOnline ? 'bg-emerald-500' : 'bg-red-500'"></span>
           </span>
-          <span class="text-xs font-semibold" :class="isOnline ? 'text-emerald-400' : 'text-red-400'">
+          <span class="text-xs font-bold" :class="isOnline ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'">
             {{ isOnline ? 'ប្រព័ន្ធភ្ជាប់ជោគជ័យ' : 'ដាច់ការភ្ជាប់' }}
           </span>
-          <span class="text-[10px] text-gray-500">| {{ lastUpdated }}</span>
+          <span class="text-[10px] text-slate-400 dark:text-slate-500 font-bold">| {{ lastUpdated }}</span>
         </div>
       </div>
     </header>
 
-    <!-- Main Grid System layout -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Main Grid layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
       
-      <!-- LEFT SECTION: System schematic and logs (4 columns) -->
-      <div class="lg:col-span-4 space-y-6 flex flex-col">
-        <!-- Schematic visualizer -->
-        <div class="glass-card rounded-3xl p-6 flex-grow flex flex-col justify-between">
-          <div>
-            <h2 class="text-sm font-bold mb-1 flex items-center text-gray-300">
-              <i data-lucide="box" class="w-4 h-4 mr-2 text-emerald-400"></i>
-              គ្រោងដំណើរការប្រព័ន្ធបច្ចុប្បន្ន (Live Schematic)
-            </h2>
-            <p class="text-[11px] text-gray-500 mb-6">បង្ហាញពីចរន្តចរាចរណ៍ទឹក និងខ្យល់ស្វ័យប្រវត្តិ</p>
+      <!-- COLUMN 1: Schematic Visualizer & Relays Controls (lg:col-span-4) -->
+      <div class="lg:col-span-4 flex flex-col gap-6">
+        
+        <!-- Interactive Visual Schematic -->
+        <div class="glass-panel rounded-3xl p-5 flex flex-col justify-between">
+          <div class="mb-4">
+            <div class="flex justify-between items-start">
+              <div>
+                <h2 class="text-sm font-bold flex items-center text-slate-700 dark:text-slate-200">
+                  <i data-lucide="network" class="w-4.5 h-4.5 mr-2 text-emerald-600 dark:text-emerald-400"></i>
+                  គ្រោងដំណើរការប្រព័ន្ធ (Live Schematic)
+                </h2>
+                <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 font-medium">បង្ហាញពីចរន្តចរាចរណ៍ទឹក និងខ្យល់ស្វ័យប្រវត្ត</p>
+              </div>
+              <span class="text-[9px] px-2 py-0.5 rounded-full border"
+                    :class="status.autoMode ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400' : 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400'">
+                {{ status.autoMode ? 'Auto' : 'Manual' }}
+              </span>
+            </div>
           </div>
           
-          <!-- Custom Interactive SVG Schematic Diagram -->
-          <div class="flex justify-center items-center py-6 bg-gray-950/40 rounded-2xl border border-gray-900 relative overflow-hidden">
+          <!-- SVG Diagram -->
+          <div class="flex justify-center items-center py-6 bg-white dark:bg-slate-950/80 rounded-2xl border border-slate-200 dark:border-slate-900 relative overflow-hidden shadow-inner">
             <svg width="220" height="180" viewBox="0 0 220 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="3" result="blur" />
+                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                </filter>
+                <linearGradient id="tubeGrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" class="stop-color-slate-200 dark:stop-color-slate-800" stop-color="#e2e8f0" />
+                  <stop offset="50%" class="stop-color-slate-100 dark:stop-color-slate-700" stop-color="#cbd5e1" />
+                  <stop offset="100%" class="stop-color-slate-200 dark:stop-color-slate-800" stop-color="#e2e8f0" />
+                </linearGradient>
+              </defs>
+
               <!-- Grow Tube (NFT pipe) -->
-              <rect x="20" y="55" width="180" height="20" rx="3" fill="#1e293b" stroke="#334155" stroke-width="2"/>
+              <rect x="20" y="55" width="180" height="20" rx="4" fill="url(#tubeGrad)" stroke="#94a3b8" class="dark:stroke-slate-700" stroke-width="1.5"/>
+              <line x1="20" y1="65" x2="200" y2="65" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+              
               <!-- Plants growing out of Tube -->
-              <circle cx="50" cy="55" r="4" fill="#10b981"/>
-              <path d="M50 51C48 46 52 44 50 40C51 44 54 46 50 51Z" fill="#10b981"/>
-              
-              <circle cx="110" cy="55" r="4" fill="#10b981"/>
-              <path d="M110 51C108 46 112 44 110 40C111 44 114 46 110 51Z" fill="#10b981"/>
-              
-              <circle cx="170" cy="55" r="4" fill="#10b981"/>
-              <path d="M170 51C168 46 172 44 170 40C171 44 174 46 170 51Z" fill="#10b981"/>
+              <g id="plants" class="plant-glow">
+                <!-- Plant 1 -->
+                <circle cx="50" cy="55" r="4.5" fill="#34d399"/>
+                <path d="M50 51C47 43 53 41 50 37C52 41 55 43 50 51Z" fill="#10b981"/>
+                <path d="M50 51C53 44 47 42 50 37C48 42 45 44 50 51Z" fill="#059669"/>
+                
+                <!-- Plant 2 -->
+                <circle cx="110" cy="55" r="4.5" fill="#34d399"/>
+                <path d="M110 51C107 43 113 41 110 37C112 41 115 43 110 51Z" fill="#10b981"/>
+                <path d="M110 51C113 44 107 42 110 37C108 42 105 44 110 51Z" fill="#059669"/>
+                
+                <!-- Plant 3 -->
+                <circle cx="170" cy="55" r="4.5" fill="#34d399"/>
+                <path d="M170 51C167 43 173 41 170 37C172 41 175 43 170 51Z" fill="#10b981"/>
+                <path d="M170 51C173 44 167 42 170 37C168 42 165 44 170 51Z" fill="#059669"/>
+              </g>
 
               <!-- Water Tank at bottom -->
-              <rect x="60" y="125" width="100" height="45" rx="6" fill="#0f172a" stroke="#1e293b" stroke-width="2"/>
-              <!-- Water inside Tank -->
-              <rect x="62" y="137" width="96" height="31" rx="4" fill="#1e3a8a" opacity="0.6"/>
-              <path d="M62 137C75 135 85 139 98 137C110 135 125 139 135 137C145 135 152 137 158 137V168H62V137Z" fill="#1d4ed8" opacity="0.4"/>
+              <rect x="60" y="125" width="100" height="45" rx="8" fill="#f8fafc" class="dark:fill-slate-900" stroke="#cbd5e1" class="dark:stroke-slate-700" stroke-width="1.5"/>
+              
+              <!-- Water level representation in SVG -->
+              <rect x="62" y="135" width="96" height="33" rx="6" :fill="status.waterLevel >= status.waterLevelThreshold ? 'rgba(239, 68, 68, 0.15)' : 'rgba(59, 130, 246, 0.15)'" />
+              <path d="M62 142C75 140 85 144 98 142C110 140 125 144 135 142C145 140 152 142 158 142V166H62V142Z" :fill="status.waterLevel >= status.waterLevelThreshold ? '#ef4444' : '#2563eb'" opacity="0.35"/>
               
               <!-- Connection pipes -->
-              <!-- Water supply tube (from pump to top NFT) -->
-              <path d="M140 145H185V75H170" stroke="#475569" stroke-width="3" fill="none"/>
-              <!-- Flow line overlay when pump is active -->
-              <path v-if="status.pump === 'ON'" d="M140 145H185V75H170" stroke="#3b82f6" stroke-width="3" fill="none" class="animate-flow"/>
+              <path d="M140 145H185V75H170" stroke="#94a3b8" class="dark:stroke-slate-700" stroke-width="2.5" fill="none"/>
+              <path v-if="status.pump === 'ON'" d="M140 145H185V75H170" stroke="#3b82f6" stroke-width="2.5" fill="none" class="animate-flow" filter="url(#glow)"/>
 
-              <!-- Return tube (from NFT back to tank) -->
-              <path d="M30 75V110H80V125" stroke="#475569" stroke-width="3" fill="none"/>
-              <path v-if="status.pump === 'ON'" d="M30 75V110H80V125" stroke="#3b82f6" stroke-width="3" fill="none" class="animate-flow"/>
+              <path d="M30 75V110H80V125" stroke="#94a3b8" class="dark:stroke-slate-700" stroke-width="2.5" fill="none"/>
+              <path v-if="status.pump === 'ON'" d="M30 75V110H80V125" stroke="#3b82f6" stroke-width="2.5" fill="none" class="animate-flow" filter="url(#glow)"/>
 
               <!-- Pump Icon representation -->
-              <circle cx="140" cy="145" r="8" :fill="status.pump === 'ON' ? '#3b82f6' : '#475569'" stroke="#1e293b" stroke-width="2"/>
-              <path d="M138 145H142" stroke="white" stroke-width="1.5"/>
+              <circle cx="140" cy="145" r="9.5" :fill="status.pump === 'ON' ? '#2563eb' : '#94a3b8'" class="dark:stroke-slate-700" stroke-width="1.5"/>
+              <path d="M137 145H143" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M140 142V148" stroke="white" stroke-width="1.5" stroke-linecap="round" v-if="status.pump === 'ON'"/>
 
               <!-- Fan Icon representation -->
-              <circle cx="180" cy="30" r="14" fill="#1e293b" stroke="#334155" stroke-width="2"/>
+              <circle cx="180" cy="30" r="14" fill="#f8fafc" class="dark:fill-slate-900" stroke="#cbd5e1" class="dark:stroke-slate-700" stroke-width="1.5"/>
               <!-- Spinning Blades -->
               <g cx="180" cy="30" :class="status.fan === 'ON' ? 'animate-spin-slow origin-[180px_30px]' : ''">
-                <path d="M180 18V30" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
-                <path d="M180 30V42" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
-                <path d="M168 30H180" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
-                <path d="M180 30H192" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
+                <circle cx="180" cy="30" r="2.5" fill="#94a3b8"/>
+                <path d="M180 18V30" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M180 30V42" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M168 30H180" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M180 30H192" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round"/>
               </g>
             </svg>
             
-            <!-- Floating Indicators -->
-            <div class="absolute top-2 left-3 flex items-center space-x-1.5 bg-gray-950/80 px-2 py-0.5 rounded-md border border-gray-800 text-[10px]">
-              <span class="w-1.5 h-1.5 rounded-full" :class="status.fan === 'ON' ? 'bg-emerald-400 animate-pulse' : 'bg-gray-600'"></span>
-              <span class="text-gray-400 font-medium">កង្ហារ៖ {{ status.fan === 'ON' ? 'ដើរ' : 'ឈប់' }}</span>
+            <!-- Float status badges -->
+            <div class="absolute top-3 left-3 flex items-center space-x-1.5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-800 text-[9px] shadow-sm">
+              <span class="w-1.5 h-1.5 rounded-full" :class="status.fan === 'ON' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400 dark:bg-slate-500'"></span>
+              <span class="text-slate-600 dark:text-slate-300 font-semibold tracking-wider">កង្ហារ៖ {{ status.fan === 'ON' ? 'ដំណើរការ' : 'បិទ' }}</span>
             </div>
-            <div class="absolute bottom-2 left-3 flex items-center space-x-1.5 bg-gray-950/80 px-2 py-0.5 rounded-md border border-gray-800 text-[10px]">
-              <span class="w-1.5 h-1.5 rounded-full" :class="status.pump === 'ON' ? 'bg-blue-400 animate-pulse' : 'bg-gray-600'"></span>
-              <span class="text-gray-400 font-medium">ម៉ូទ័រ៖ {{ status.pump === 'ON' ? 'ដើរ' : 'ឈប់' }}</span>
+            <div class="absolute bottom-3 left-3 flex items-center space-x-1.5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-800 text-[9px] shadow-sm">
+              <span class="w-1.5 h-1.5 rounded-full" :class="status.pump === 'ON' ? 'bg-blue-500 animate-pulse' : 'bg-slate-400 dark:bg-slate-500'"></span>
+              <span class="text-slate-600 dark:text-slate-300 font-semibold tracking-wider">ម៉ូទ័រ៖ {{ status.pump === 'ON' ? 'ដំណើរការ' : 'បិទ' }}</span>
             </div>
           </div>
         </div>
 
-        <!-- Terminal log panel -->
-        <div class="glass-card rounded-3xl p-4 sm:p-6 flex flex-col h-auto min-h-[16rem]">
-          <div class="mb-3">
-            <h2 class="text-sm font-bold mb-1 flex items-center text-gray-300">
-              <i data-lucide="terminal" class="w-4 h-4 mr-2 text-emerald-400"></i>
-              កំណត់ហេតុព្រឹត្តិការណ៍ប្រព័ន្ធ (Event Log)
+        <!-- Toggle Relay Controls -->
+        <div class="glass-panel rounded-3xl p-5 space-y-4">
+          <div>
+            <h2 class="text-sm font-bold flex items-center text-slate-700 dark:text-slate-200">
+              <i data-lucide="sliders" class="w-4.5 h-4.5 mr-2 text-emerald-600 dark:text-emerald-400"></i>
+              ផ្ទាំងគ្រប់គ្រងកុងតាក់ (Controls)
             </h2>
-            <p class="text-[11px] text-gray-500">បង្ហាញរាល់សកម្មភាពបញ្ជារបស់ម៉ាស៊ីនក្នុងពេលជាក់ស្តែង</p>
+            <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 font-medium">បើកបិទ និងផ្លាស់ប្តូររបៀបបញ្ជា</p>
           </div>
-          
-          <div ref="logContainer" class="flex-grow bg-black/50 border border-gray-900 rounded-xl p-3.5 text-[11px] text-emerald-400/90 overflow-y-auto max-h-[12rem] space-y-1.5 scrollbar-thin scrollbar-thumb-gray-800" style="font-family: 'Kantumruy Pro', sans-serif;">
-            <div v-for="(log, idx) in systemLogs" :key="idx" class="leading-relaxed flex flex-wrap gap-1.5 items-start">
-              <span class="text-gray-600 text-[10px] whitespace-nowrap mt-0.5">[{{ log.time }}]</span> 
-              <span class="flex-1" :class="log.type === 'error' ? 'text-red-400' : log.type === 'alert' ? 'text-amber-400' : 'text-emerald-400'">
-                {{ log.message }}
-              </span>
+
+          <!-- Mode Toggle Switch (Auto vs Manual) -->
+          <div class="flex items-center justify-between p-3.5 bg-slate-200/50 dark:bg-slate-950/60 rounded-2xl border border-slate-200/80 dark:border-slate-900 shadow-inner">
+            <div class="flex items-center gap-3">
+              <div class="p-2 rounded-xl" :class="status.autoMode ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'">
+                <i :data-lucide="status.autoMode ? 'cpu' : 'toggle-left'" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <p class="font-bold text-xs leading-none">{{ status.autoMode ? 'របៀប Auto' : 'របៀប Manual' }}</p>
+                <span class="text-[9px] text-slate-400 dark:text-slate-500 mt-1 block font-semibold">
+                  {{ status.autoMode ? 'បញ្ជាតាមសេនស័រ' : 'បញ្ជាដោយដៃផ្ទាល់' }}
+                </span>
+              </div>
             </div>
+            
+            <div class="relative inline-block w-9 align-middle select-none transition duration-200 ease-in">
+              <input type="checkbox" id="autoMode" :checked="status.autoMode" @change="toggleAutoMode" class="switch-checkbox hidden" />
+              <label for="autoMode" class="switch-label block overflow-hidden h-5 rounded-full bg-slate-300 dark:bg-slate-800 cursor-pointer p-0.5 transition-colors">
+                <span class="switch-button block h-4 w-4 rounded-full bg-white dark:bg-slate-400 shadow-sm transition-transform"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Relays Actuators list -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
+            
+            <!-- Fan Control -->
+            <div class="p-3 bg-slate-200/20 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-900 rounded-2xl flex items-center justify-between transition-all animate-transition"
+                 :class="status.fan === 'ON' ? 'glow-active-emerald' : ''">
+              <div class="flex items-center gap-2.5">
+                <div class="p-2.5 rounded-xl text-xs" :class="status.fan === 'ON' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : 'bg-slate-200 dark:bg-slate-900 text-slate-400 dark:text-slate-500'">
+                  <i data-lucide="fan" class="w-4 h-4" :class="status.fan === 'ON' ? 'animate-spin-slow' : ''"></i>
+                </div>
+                <div>
+                  <p class="font-bold text-xs text-slate-700 dark:text-slate-300">កង្ហារបឺតខ្យល់</p>
+                  <p class="text-[9px] mt-0.5" :class="status.fan === 'ON' ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-400 dark:text-slate-500'">
+                    {{ status.fan === 'ON' ? 'បើក' : 'បិទ' }}
+                  </p>
+                </div>
+              </div>
+              <div class="relative inline-block w-9 align-middle select-none">
+                <input type="checkbox" id="fanSwitch" :checked="status.fan === 'ON'" :disabled="status.autoMode" @change="toggleRelay('fan')" class="switch-checkbox hidden" />
+                <label for="fanSwitch" class="switch-label block overflow-hidden h-5 rounded-full bg-slate-300 dark:bg-slate-800 p-0.5 transition-colors" :class="status.autoMode ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'">
+                  <span class="switch-button block h-4 w-4 rounded-full bg-white dark:bg-slate-400 shadow-sm transition-transform"></span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Pump Control -->
+            <div class="p-3 bg-slate-200/20 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-900 rounded-2xl flex items-center justify-between transition-all animate-transition"
+                 :class="status.pump === 'ON' ? 'glow-active-blue' : ''">
+              <div class="flex items-center gap-2.5">
+                <div class="p-2.5 rounded-xl text-xs" :class="status.pump === 'ON' ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400' : 'bg-slate-200 dark:bg-slate-900 text-slate-400 dark:text-slate-500'">
+                  <i data-lucide="droplet" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <p class="font-bold text-xs text-slate-700 dark:text-slate-300">ម៉ូទ័រទឹកបង្វិល</p>
+                  <p class="text-[9px] mt-0.5" :class="status.pump === 'ON' ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-400 dark:text-slate-500'">
+                    {{ status.pump === 'ON' ? 'បើក' : 'បិទ' }}
+                  </p>
+                </div>
+              </div>
+              <div class="relative inline-block w-9 align-middle select-none">
+                <input type="checkbox" id="pumpSwitch" :checked="status.pump === 'ON'" :disabled="status.autoMode" @change="toggleRelay('pump')" class="switch-blue switch-checkbox hidden" />
+                <label for="pumpSwitch" class="switch-label block overflow-hidden h-5 rounded-full bg-slate-300 dark:bg-slate-800 p-0.5 transition-colors" :class="status.autoMode ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'">
+                  <span class="switch-button block h-4 w-4 rounded-full bg-white dark:bg-slate-400 shadow-sm transition-transform"></span>
+                </label>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
 
-      <!-- MIDDLE SECTION: Advanced Sensor Gauges (5 columns) -->
-      <div class="lg:col-span-5 space-y-6">
+      <!-- COLUMN 2: Environmental Gauges & Real-time Trends Chart (lg:col-span-5) -->
+      <div class="lg:col-span-5 flex flex-col gap-6">
         
-        <!-- Environmental Sensors Grid Card -->
-        <div class="glass-card-premium rounded-3xl p-6 border-emerald-500/10">
-          <h2 class="text-sm font-bold mb-6 flex items-center text-gray-300">
-            <i data-lucide="cloud-sun" class="w-4 h-4 mr-2 text-emerald-400"></i>
-            ស្ថានភាពបរិស្ថានជុំវិញដំណាំ (Environment)
+        <!-- Environment Stats Card -->
+        <div class="glass-panel-premium rounded-3xl p-5 border-slate-200 dark:border-slate-900 flex-grow">
+          <h2 class="text-sm font-bold mb-4 flex items-center text-slate-700 dark:text-slate-200">
+            <i data-lucide="sun-cloud" class="w-4.5 h-4.5 mr-2 text-emerald-600 dark:text-emerald-400"></i>
+            ស្ថានភាពប្រព័ន្ធ & បរិស្ថាន (Metrics)
           </h2>
           
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div class="grid grid-cols-2 gap-4">
             
-            <!-- Gauge: Air Temperature -->
-            <div class="flex flex-col items-center">
-              <span class="text-xs font-semibold text-gray-400 mb-3">សីតុណ្ហភាពខ្យល់</span>
-              <!-- Circular Progress SVG -->
-              <div class="relative w-36 h-36 sm:w-32 sm:h-32 flex justify-center items-center">
+            <!-- Gauge: Air Temp -->
+            <div class="flex flex-col items-center bg-slate-200/20 dark:bg-slate-950/40 p-4 rounded-2xl border border-slate-200 dark:border-slate-900/60">
+              <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-2.5">សីតុណ្ហភាពខ្យល់</span>
+              <div class="relative w-28 h-28 flex justify-center items-center">
                 <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" r="40" stroke="#111827" stroke-width="8" fill="transparent" />
-                  <circle cx="50" cy="50" r="40" stroke="url(#emeraldGradient)" stroke-width="8" fill="transparent"
-                          :stroke-dasharray="251.2"
-                          :stroke-dashoffset="251.2 - (251.2 * Math.min(status.airTemp, 45)) / 45"
-                          stroke-linecap="round" class="transition-all duration-500" />
-                  
+                  <circle cx="50" cy="50" r="41" stroke="rgba(100,100,100,0.06)" stroke-width="6" fill="transparent" />
+                  <circle cx="50" cy="50" r="41" stroke="url(#airGradient)" stroke-width="6.5" fill="transparent"
+                          :stroke-dasharray="257.6"
+                          :stroke-dashoffset="257.6 - (257.6 * Math.min(status.airTemp, 45)) / 45"
+                          stroke-linecap="round" class="transition-all duration-700 ease-out filter drop-shadow-[0_0_3px_#10b981]" />
                   <defs>
-                    <linearGradient id="emeraldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <linearGradient id="airGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stop-color="#34d399" />
-                      <stop offset="100%" stop-color="#10b981" />
+                      <stop offset="100%" stop-color="#059669" />
                     </linearGradient>
                   </defs>
                 </svg>
-                <!-- Central Value -->
                 <div class="absolute flex flex-col items-center">
-                  <span class="text-2xl font-bold text-emerald-400 text-glow-emerald leading-none">
+                  <span class="text-2xl font-bold text-emerald-600 dark:text-emerald-400 leading-none tracking-tight">
                     {{ status.airTemp.toFixed(1) }}
                   </span>
-                  <span class="text-[10px] text-gray-500 mt-1">អង្សាសេ (°C)</span>
+                  <span class="text-[8px] text-slate-400 dark:text-slate-500 font-bold mt-1 uppercase tracking-wider">°C</span>
                 </div>
               </div>
-              
-              <!-- Small Info Badge -->
-              <div class="mt-4 text-[10px] py-1 px-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400/90 flex items-center">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span>
+              <div class="mt-3 text-[8px] font-bold py-1 px-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
                 កម្រិតកំណត់៖ {{ status.airTempThreshold }}°C
               </div>
             </div>
 
             <!-- Gauge: Humidity -->
-            <div class="flex flex-col items-center">
-              <span class="text-xs font-semibold text-gray-400 mb-3">សំណើមខ្យល់</span>
-              <div class="relative w-36 h-36 sm:w-32 sm:h-32 flex justify-center items-center">
+            <div class="flex flex-col items-center bg-slate-200/20 dark:bg-slate-950/40 p-4 rounded-2xl border border-slate-200 dark:border-slate-900/60">
+              <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-2.5">សំណើមខ្យល់</span>
+              <div class="relative w-28 h-28 flex justify-center items-center">
                 <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" r="40" stroke="#111827" stroke-width="8" fill="transparent" />
-                  <circle cx="50" cy="50" r="40" stroke="url(#blueGradient)" stroke-width="8" fill="transparent"
-                          :stroke-dasharray="251.2"
-                          :stroke-dashoffset="251.2 - (251.2 * status.humidity) / 100"
-                          stroke-linecap="round" class="transition-all duration-500" />
+                  <circle cx="50" cy="50" r="41" stroke="rgba(100,100,100,0.06)" stroke-width="6" fill="transparent" />
+                  <circle cx="50" cy="50" r="41" stroke="url(#humidityGradient)" stroke-width="6.5" fill="transparent"
+                          :stroke-dasharray="257.6"
+                          :stroke-dashoffset="257.6 - (257.6 * status.humidity) / 100"
+                          stroke-linecap="round" class="transition-all duration-700 ease-out filter drop-shadow-[0_0_3px_#3b82f6]" />
                   <defs>
-                    <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <linearGradient id="humidityGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stop-color="#60a5fa" />
-                      <stop offset="100%" stop-color="#3b82f6" />
+                      <stop offset="100%" stop-color="#1d4ed8" />
                     </linearGradient>
                   </defs>
                 </svg>
                 <div class="absolute flex flex-col items-center">
-                  <span class="text-2xl font-bold text-blue-400 text-glow-blue leading-none">
+                  <span class="text-2xl font-bold text-blue-600 dark:text-blue-400 leading-none tracking-tight">
                     {{ status.humidity.toFixed(0) }}
                   </span>
-                  <span class="text-[10px] text-gray-500 mt-1">ភាគរយ (%)</span>
+                  <span class="text-[8px] text-slate-400 dark:text-slate-500 font-bold mt-1 uppercase tracking-wider">%</span>
                 </div>
               </div>
-              <div class="mt-4 text-[10px] py-1 px-2.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400/90 flex items-center">
-                <span class="w-1.5 h-1.5 rounded-full bg-blue-400 mr-1.5"></span>
+              <div class="mt-3 text-[8px] font-bold py-1 px-2.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400">
                 កម្រិតល្អ៖ ៥៥-៧៥%
               </div>
             </div>
 
-          </div>
-        </div>
-
-        <!-- Water Sensors Grid Card -->
-        <div class="glass-card-premium rounded-3xl p-6 border-blue-500/10">
-          <h2 class="text-sm font-bold mb-6 flex items-center text-gray-300">
-            <i data-lucide="waves" class="w-4 h-4 mr-2 text-blue-400"></i>
-            ស្ថានភាពទឹកក្នុងធុង (Water System)
-          </h2>
-          
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            
             <!-- Gauge: Water Temp -->
-            <div class="flex flex-col items-center">
-              <span class="text-xs font-semibold text-gray-400 mb-3">សីតុណ្ហភាពទឹក</span>
-              <div class="relative w-36 h-36 sm:w-32 sm:h-32 flex justify-center items-center">
+            <div class="flex flex-col items-center bg-slate-200/20 dark:bg-slate-950/40 p-4 rounded-2xl border border-slate-200 dark:border-slate-900/60">
+              <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-2.5">សីតុណ្ហភាពទឹក</span>
+              <div class="relative w-28 h-28 flex justify-center items-center">
                 <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" r="40" stroke="#111827" stroke-width="8" fill="transparent" />
-                  <circle cx="50" cy="50" r="40" stroke="url(#cyanGradient)" stroke-width="8" fill="transparent"
-                          :stroke-dasharray="251.2"
-                          :stroke-dashoffset="251.2 - (251.2 * Math.min(status.waterTemp, 45)) / 45"
-                          stroke-linecap="round" class="transition-all duration-500" />
+                  <circle cx="50" cy="50" r="41" stroke="rgba(100,100,100,0.06)" stroke-width="6" fill="transparent" />
+                  <circle cx="50" cy="50" r="41" stroke="url(#waterTempGradient)" stroke-width="6.5" fill="transparent"
+                          :stroke-dasharray="257.6"
+                          :stroke-dashoffset="257.6 - (257.6 * Math.min(status.waterTemp, 45)) / 45"
+                          stroke-linecap="round" class="transition-all duration-700 ease-out filter drop-shadow-[0_0_3px_#06b6d4]" />
                   <defs>
-                    <linearGradient id="cyanGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <linearGradient id="waterTempGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stop-color="#22d3ee" />
                       <stop offset="100%" stop-color="#0891b2" />
                     </linearGradient>
                   </defs>
                 </svg>
                 <div class="absolute flex flex-col items-center">
-                  <span class="text-2xl font-bold text-cyan-400 leading-none">
+                  <span class="text-2xl font-bold text-cyan-600 dark:text-cyan-400 leading-none tracking-tight">
                     {{ status.waterTemp.toFixed(1) }}
                   </span>
-                  <span class="text-[10px] text-gray-500 mt-1">អង្សាសេ (°C)</span>
+                  <span class="text-[8px] text-slate-400 dark:text-slate-500 font-bold mt-1 uppercase tracking-wider">°C</span>
                 </div>
               </div>
-              <div class="mt-4 text-[10px] py-1 px-2.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400/90 flex items-center">
-                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 mr-1.5"></span>
-                ព្រមាន៖ {{ status.waterTempThreshold }}°C
+              <div class="mt-3 text-[8px] font-bold py-1 px-2.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-600 dark:text-cyan-400">
+                កម្រិតព្រមាន៖ {{ status.waterTempThreshold }}°C
               </div>
             </div>
 
-            <!-- Gauge: Water Tank Graphic -->
-            <div class="flex flex-col items-center">
-              <span class="text-xs font-semibold text-gray-400 mb-3">កម្ពស់ទឹកក្នុងអាង</span>
+            <!-- Gauge: 3D Animated Water Tank Visualizer -->
+            <div class="flex flex-col items-center bg-slate-200/20 dark:bg-slate-950/40 p-4 rounded-2xl border border-slate-200 dark:border-slate-900/60">
+              <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-2.5">កម្ពស់ទឹកក្នុងអាង</span>
               
-              <!-- 3D style water tank visualizer -->
-              <div class="relative w-24 h-36 sm:w-20 sm:h-32 bg-gray-950 border-2 border-gray-800 rounded-2xl flex flex-col justify-end p-0.5 overflow-hidden shadow-inner">
-                <!-- Measurement Grid Lines -->
-                <div class="absolute inset-y-0 right-2 left-2 flex flex-col justify-between pointer-events-none py-2 z-0">
-                  <div class="border-b border-gray-800/80 w-full text-[7px] text-gray-600 text-right">30cm (ពេញ)</div>
-                  <div class="border-b border-gray-800/80 w-full text-[7px] text-gray-600 text-right">20cm</div>
-                  <div class="border-b border-gray-800/80 w-full text-[7px] text-gray-600 text-right">15cm (50%)</div>
-                  <div class="border-b border-gray-800/80 w-full text-[7px] text-gray-600 text-right">10cm</div>
-                  <div class="border-b border-gray-800/80 w-full text-[7px] text-gray-600 text-right">0cm (ទទេ)</div>
+              <!-- 3D Cylindrical Tank -->
+              <div class="relative w-24 h-28 bg-white dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-800 rounded-2xl flex flex-col justify-end overflow-hidden water-tank-wrapper">
+                <!-- Measurement Grid Lines inside tank -->
+                <div class="absolute inset-y-0 right-2 left-2 flex flex-col justify-between pointer-events-none py-2 z-20">
+                  <div class="border-b border-slate-300/40 dark:border-slate-800/80 w-full text-[5.5px] text-slate-400 dark:text-slate-500 text-right">30cm</div>
+                  <div class="border-b border-slate-300/40 dark:border-slate-800/80 w-full text-[5.5px] text-slate-400 dark:text-slate-500 text-right">20cm</div>
+                  <div class="border-b border-slate-300/40 dark:border-slate-800/80 w-full text-[5.5px] text-slate-400 dark:text-slate-500 text-right">15cm</div>
+                  <div class="border-b border-slate-300/40 dark:border-slate-800/80 w-full text-[5.5px] text-slate-400 dark:text-slate-500 text-right">10cm</div>
+                  <div class="border-b border-slate-300/40 dark:border-slate-800/80 w-full text-[5.5px] text-slate-400 dark:text-slate-500 text-right">0cm</div>
                 </div>
                 
-                <!-- Dynamic Threshold Line -->
-                <div class="absolute left-0 right-0 border-t-2 border-dashed border-amber-500 z-20 transition-all duration-300 pointer-events-none"
+                <!-- Danger Threshold Line -->
+                <div class="absolute left-0 right-0 border-t border-dashed border-red-500/60 z-30 transition-all duration-300 pointer-events-none"
                      :style="{ bottom: Math.max(0, Math.min(100, ((30 - status.waterLevelThreshold) / 30) * 100)) + '%' }">
-                  <span class="absolute -top-3 left-1 text-[8px] font-bold text-amber-400 bg-black/60 px-1 rounded shadow">
-                    ទាបបំផុត: {{ status.waterLevelThreshold }}
-                  </span>
                 </div>
 
-                <!-- Water fill representation (if water level distance is high, water level is low) -->
-                <div class="w-full rounded-xl transition-all duration-1000 relative z-10"
-                     :class="status.waterLevel >= status.waterLevelThreshold 
-                             ? 'bg-gradient-to-t from-red-600 to-red-400/80 glow-red' 
-                             : 'bg-gradient-to-t from-blue-700 to-blue-400/80 glow-blue'"
-                     :style="{ height: Math.max(0, Math.min(100, ((30 - status.waterLevel) / 30) * 100)) + '%' }">
+                <!-- Animated Water Wave Liquid -->
+                <div class="wave-container w-full z-10" :style="{ height: waterLevelPercent + '%' }">
+                  <div class="wave" :class="status.waterLevel >= status.waterLevelThreshold ? 'wave-danger' : ''"></div>
+                  <div class="wave wave-second" :class="status.waterLevel >= status.waterLevelThreshold ? 'wave-danger-second' : ''"></div>
                   
-                  <!-- Top shine effect on liquid -->
-                  <div class="absolute top-0 inset-x-0 h-1 bg-white/20 rounded-full"></div>
+                  <!-- Bubbles inside liquid (active when pump runs) -->
+                  <div class="absolute inset-0 z-0 opacity-40 pointer-events-none" v-if="status.pump === 'ON'">
+                    <span class="absolute w-1 h-1 bg-white rounded-full bubble bubble-1"></span>
+                    <span class="absolute w-1.5 h-1.5 bg-white rounded-full bubble bubble-2"></span>
+                    <span class="absolute w-1 h-1 bg-white rounded-full bubble bubble-3"></span>
+                  </div>
                 </div>
 
-                <!-- Centered Numerical Value -->
-                <div class="absolute inset-0 flex flex-col justify-center items-center pointer-events-none z-30">
-                  <span class="text-lg font-bold drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]"
-                        :class="status.waterLevel >= status.waterLevelThreshold ? 'text-red-400 animate-pulse' : 'text-gray-100'">
+                <!-- Text Readout Overlaid -->
+                <div class="absolute inset-0 flex flex-col justify-center items-center pointer-events-none z-40">
+                  <span class="text-xl font-black drop-shadow-[0_2px_3px_rgba(255,255,255,0.7)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] text-slate-800 dark:text-slate-100"
+                        :class="status.waterLevel >= status.waterLevelThreshold ? 'text-red-600 dark:text-red-400 animate-pulse' : ''">
                     {{ Math.max(0, 30 - status.waterLevel) }}
                   </span>
-                  <span class="text-[8px] text-gray-400 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">cm</span>
+                  <span class="text-[8px] font-bold text-slate-500 dark:text-slate-400 tracking-wider">cm</span>
                 </div>
               </div>
 
               <!-- Warning Indicator Badge -->
-              <div class="mt-4 text-[10px] py-1 px-2 rounded-lg flex items-center border"
+              <div class="mt-3 text-[8px] font-bold py-1 px-2.5 rounded-lg flex items-center border"
                    :class="status.waterLevel >= status.waterLevelThreshold 
-                           ? 'text-red-400 bg-red-500/10 border-red-500/20' 
-                           : 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20'">
-                <span class="w-1.5 h-1.5 rounded-full mr-1.5"
-                      :class="status.waterLevel >= status.waterLevelThreshold ? 'bg-red-400 animate-ping' : 'bg-indigo-400'"></span>
+                           ? 'text-red-600 bg-red-500/10 border-red-500/20' 
+                           : 'text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 border-indigo-500/20'">
+                <span class="w-1 h-1 rounded-full mr-1.5"
+                      :class="status.waterLevel >= status.waterLevelThreshold ? 'bg-red-500 animate-ping' : 'bg-indigo-500 dark:bg-indigo-400'"></span>
                 {{ status.waterLevel >= status.waterLevelThreshold ? '🚨 ទឹកទាបខ្លាំង!' : 'កម្រិតធម្មតា' }}
               </div>
             </div>
@@ -402,186 +656,143 @@
           </div>
         </div>
 
+        <!-- Real-Time Trend Charts Card -->
+        <div class="glass-panel rounded-3xl p-5 flex flex-col min-h-[14rem]">
+          <div class="mb-3 flex justify-between items-center">
+            <div>
+              <h2 class="text-sm font-bold flex items-center text-slate-700 dark:text-slate-200">
+                <i data-lucide="trending-up" class="w-4.5 h-4.5 mr-2 text-emerald-600 dark:text-emerald-400"></i>
+                គំនូសតាងនិន្នាការ (Real-time Trends)
+              </h2>
+              <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 font-medium">ក្រាហ្វបង្ហាញបម្រែបម្រួលបច្ចុប្បន្ន</p>
+            </div>
+            <span class="text-[8px] bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded font-mono">Live</span>
+          </div>
+          
+          <!-- Chart Canvas Container -->
+          <div class="flex-grow relative min-h-[10rem]">
+            <canvas id="trendsChart"></canvas>
+          </div>
+        </div>
+
       </div>
 
-      <!-- RIGHT SECTION: System Control & Threshold Settings (3 columns) -->
-      <div class="lg:col-span-3 space-y-6">
+      <!-- COLUMN 3: Config Settings & System Logs (lg:col-span-3) -->
+      <div class="lg:col-span-3 flex flex-col gap-6">
         
-        <!-- Control Mode Switcher & Relays -->
-        <div class="glass-card rounded-3xl p-6 space-y-6">
+        <!-- Configurations Panel -->
+        <div class="glass-panel rounded-3xl p-5 space-y-4">
           <div>
-            <h2 class="text-sm font-bold mb-1 flex items-center text-gray-300">
-              <i data-lucide="toggle-left" class="w-4 h-4 mr-2 text-emerald-400"></i>
-              ផ្ទាំងគ្រប់គ្រងកុងតាក់ (Controls)
+            <h2 class="text-sm font-bold flex items-center text-slate-700 dark:text-slate-200">
+              <i data-lucide="settings" class="w-4.5 h-4.5 mr-2 text-emerald-600 dark:text-emerald-400"></i>
+              ដែនកំណត់ & ប្រព័ន្ធ (Settings)
             </h2>
-            <p class="text-[11px] text-gray-500">បើកបិទ និងផ្លាស់ប្តូររបៀបបញ្ជា</p>
+            <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 font-medium">កែតម្រូវចរន្តវាស់ និងសញ្ញាព្រមាន</p>
           </div>
 
-          <!-- Auto/Manual Switch -->
-          <div class="flex items-center justify-between p-3.5 bg-gray-950/60 rounded-2xl border border-gray-900">
-            <div class="flex items-center space-x-2.5">
-              <div class="p-2 rounded-xl" :class="status.autoMode ? 'bg-emerald-500/10 text-emerald-400 glow-green' : 'bg-amber-500/10 text-amber-400'">
-                <i :data-lucide="status.autoMode ? 'cpu' : 'user-cog'" class="w-4 h-4"></i>
-              </div>
-              <div>
-                <p class="font-semibold text-xs leading-none">{{ status.autoMode ? 'របៀប Auto' : 'របៀប Manual' }}</p>
-                <span class="text-[9px] text-gray-500 mt-1 block">
-                  {{ status.autoMode ? 'បញ្ជាតាមសេនស័រ' : 'បញ្ជាដោយដៃ' }}
-                </span>
-              </div>
-            </div>
+          <!-- Range Sliders -->
+          <div class="space-y-3.5">
             
-            <button @click="toggleAutoMode" 
-                    class="relative inline-flex h-5 w-10 flex-shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
-                    :class="status.autoMode ? 'bg-emerald-500' : 'bg-gray-800'">
-              <span class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
-                    :class="status.autoMode ? 'translate-x-5' : 'translate-x-0'"></span>
-            </button>
+            <!-- Slider: Air Temp -->
+            <div class="space-y-1">
+              <div class="flex justify-between text-[11px] font-semibold">
+                <span class="text-slate-500 dark:text-slate-400">កំណត់សីតុណ្ហភាពខ្យល់</span>
+                <span class="text-emerald-600 dark:text-emerald-400 font-bold">{{ status.airTempThreshold.toFixed(1) }}°C</span>
+              </div>
+              <input type="range" min="20" max="45" step="0.5" 
+                     v-model.number="status.airTempThreshold" 
+                     @change="updateSetting('airTempThreshold')"
+                     class="w-full h-1 bg-slate-300 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+            </div>
+
+            <!-- Slider: Water Temp -->
+            <div class="space-y-1">
+              <div class="flex justify-between text-[11px] font-semibold">
+                <span class="text-slate-500 dark:text-slate-400">កំណត់សីតុណ្ហភាពទឹក</span>
+                <span class="text-cyan-600 dark:text-cyan-400 font-bold">{{ status.waterTempThreshold.toFixed(1) }}°C</span>
+              </div>
+              <input type="range" min="20" max="45" step="0.5" 
+                     v-model.number="status.waterTempThreshold" 
+                     @change="updateSetting('waterTempThreshold')"
+                     class="w-full h-1 bg-slate-300 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-400">
+            </div>
+
+            <!-- Slider: Water Level -->
+            <div class="space-y-1">
+              <div class="flex justify-between text-[11px] font-semibold">
+                <span class="text-slate-500 dark:text-slate-400">ដែនកំណត់ចម្ងាយទឹកទាប</span>
+                <span class="text-indigo-600 dark:text-indigo-400 font-bold">{{ status.waterLevelThreshold }} cm</span>
+              </div>
+              <input type="range" min="5" max="30" step="1" 
+                     v-model.number="status.waterLevelThreshold" 
+                     @change="updateSetting('waterLevelThreshold')"
+                     class="w-full h-1 bg-slate-300 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+            </div>
+
           </div>
 
-          <!-- Actuator Relays Grid -->
-          <div class="space-y-4">
+          <!-- Feature Flags Switch Toggles -->
+          <div class="border-t border-slate-300/40 dark:border-slate-900 pt-4 space-y-3">
             
-            <!-- Relay: Fan -->
-            <div class="p-3 bg-gray-950/30 border border-gray-900 rounded-2xl flex items-center justify-between"
-                 :class="status.fan === 'ON' ? 'neon-border-emerald' : ''">
-              <div class="flex items-center space-x-2.5">
-                <div class="p-2.5 rounded-xl text-xs" :class="status.fan === 'ON' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-gray-800 text-gray-500'">
-                  <i data-lucide="fan" class="w-4 h-4" :class="status.fan === 'ON' ? 'animate-spin-slow' : ''"></i>
-                </div>
-                <div>
-                  <p class="font-bold text-xs">កង្ហារបឺតខ្យល់</p>
-                  <p class="text-[9px]" :class="status.fan === 'ON' ? 'text-emerald-400' : 'text-gray-500'">
-                    ស្ថានភាព៖ {{ status.fan === 'ON' ? 'បើក' : 'បិទ' }}
-                  </p>
-                </div>
+            <!-- Telegram Alerts Toggle -->
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-500 dark:text-slate-400 font-semibold">ផ្ញើការព្រមាន Telegram</span>
+              <div class="relative inline-block w-9 align-middle select-none">
+                <input type="checkbox" id="telegramAlerts" :checked="status.telegramAlertsEnabled" @change="toggleAlerts" class="switch-checkbox hidden" />
+                <label for="telegramAlerts" class="switch-label block overflow-hidden h-5 rounded-full bg-slate-300 dark:bg-slate-800 p-0.5 cursor-pointer transition-colors">
+                  <span class="switch-button block h-4 w-4 rounded-full bg-white dark:bg-slate-400 shadow-sm transition-transform"></span>
+                </label>
               </div>
-              <button @click="toggleRelay('fan')" 
-                      :disabled="status.autoMode"
-                      class="px-3 py-1.5 rounded-xl text-[10px] font-semibold transition-all duration-200"
-                      :class="status.autoMode
-                              ? 'bg-gray-900/50 text-gray-700 border border-gray-900/80 cursor-not-allowed'
-                              : (status.fan === 'ON' ? 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20')">
-                {{ status.fan === 'ON' ? 'បិទ' : 'បើក' }}
-              </button>
             </div>
 
-            <!-- Relay: Pump -->
-            <div class="p-3 bg-gray-950/30 border border-gray-900 rounded-2xl flex items-center justify-between"
-                 :class="status.pump === 'ON' ? 'neon-border-blue' : ''">
-              <div class="flex items-center space-x-2.5">
-                <div class="p-2.5 rounded-xl text-xs" :class="status.pump === 'ON' ? 'bg-blue-500/10 text-blue-400' : 'bg-gray-800 text-gray-500'">
-                  <i data-lucide="droplet" class="w-4 h-4"></i>
-                </div>
-                <div>
-                  <p class="font-bold text-xs">ម៉ូទ័រទឹកបង្វិល</p>
-                  <p class="text-[9px]" :class="status.pump === 'ON' ? 'text-blue-400' : 'text-gray-500'">
-                    ស្ថានភាព៖ {{ status.pump === 'ON' ? 'បើក' : 'បិទ' }}
-                  </p>
-                </div>
+            <!-- Google Sheet Logging Toggle -->
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-500 dark:text-slate-400 font-semibold">កត់ត្រាលើ Google Sheets</span>
+              <div class="relative inline-block w-9 align-middle select-none">
+                <input type="checkbox" id="googleSheetLogging" :checked="status.googleSheetLoggingEnabled" @change="toggleLogging" class="switch-checkbox hidden" />
+                <label for="googleSheetLogging" class="switch-label block overflow-hidden h-5 rounded-full bg-slate-300 dark:bg-slate-800 p-0.5 cursor-pointer transition-colors">
+                  <span class="switch-button block h-4 w-4 rounded-full bg-white dark:bg-slate-400 shadow-sm transition-transform"></span>
+                </label>
               </div>
-              <button @click="toggleRelay('pump')" 
-                      :disabled="status.autoMode"
-                      class="px-3 py-1.5 rounded-xl text-[10px] font-semibold transition-all duration-200"
-                      :class="status.autoMode
-                              ? 'bg-gray-900/50 text-gray-700 border border-gray-900/80 cursor-not-allowed'
-                              : (status.pump === 'ON' ? 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20')">
-                {{ status.pump === 'ON' ? 'បិទ' : 'បើក' }}
-              </button>
+            </div>
+
+            <!-- Simulation Toggle -->
+            <div class="flex items-center justify-between text-xs border-t border-slate-300/40 dark:border-slate-900 pt-3.5">
+              <div class="flex flex-col">
+                <span class="text-slate-700 dark:text-slate-300 font-bold">របៀបតេស្ត (Simulation)</span>
+                <span class="text-[9px] text-slate-400 dark:text-slate-500 font-medium">តេស្តដោយគ្មានបន្ទះ ESP</span>
+              </div>
+              <div class="relative inline-block w-9 align-middle select-none">
+                <input type="checkbox" id="useSimulation" :checked="status.useSimulation" @change="toggleSimulation" class="switch-blue switch-checkbox hidden" />
+                <label for="useSimulation" class="switch-label block overflow-hidden h-5 rounded-full bg-slate-300 dark:bg-slate-800 p-0.5 cursor-pointer transition-colors">
+                  <span class="switch-button block h-4 w-4 rounded-full bg-white dark:bg-slate-400 shadow-sm transition-transform"></span>
+                </label>
+              </div>
             </div>
 
           </div>
         </div>
 
-        <!-- Configurations Panel (Sliders & Toggles) -->
-        <div class="glass-card rounded-3xl p-6 space-y-6">
-          <div>
-            <h2 class="text-sm font-bold mb-1 flex items-center text-gray-300">
-              <i data-lucide="sliders-horizontal" class="w-4 h-4 mr-2 text-emerald-400"></i>
-              ការកំណត់ដែនកំណត់ (Settings)
+        <!-- System Logs (Console style with Kantumruy Pro font) -->
+        <div class="glass-panel rounded-3xl p-4 flex-grow flex flex-col min-h-[14rem]">
+          <div class="mb-3">
+            <h2 class="text-sm font-bold flex items-center text-slate-700 dark:text-slate-200">
+              <i data-lucide="terminal" class="w-4.5 h-4.5 mr-2 text-emerald-600 dark:text-emerald-400"></i>
+              កំណត់ហេតុប្រព័ន្ធ (Event Log)
             </h2>
-            <p class="text-[11px] text-gray-500">កែតម្រូវចរន្តវាស់ និងប្រព័ន្ធ Alerts</p>
+            <p class="text-[10px] text-slate-500 dark:text-slate-500 mt-0.5 font-medium">បង្ហាញរាល់សកម្មភាពក្នុងពេលជាក់ស្តែង</p>
           </div>
-
-          <!-- Sliders and Inputs -->
-          <div class="space-y-4">
-            
-            <!-- Input Slider: Air Temp -->
-            <div class="space-y-1.5">
-              <div class="flex justify-between text-xs font-semibold">
-                <span class="text-gray-400">កំណត់សីតុណ្ហភាពខ្យល់</span>
-                <span class="text-emerald-400">{{ status.airTempThreshold.toFixed(1) }}°C</span>
-              </div>
-              <input type="range" min="20" max="45" step="0.5" 
-                     v-model.number="status.airTempThreshold" 
-                     @change="updateSetting('airTempThreshold')"
-                     class="w-full h-1.5 bg-gray-800 rounded-lg appearance-none cursor-pointer">
+          
+          <!-- Console Box styled with Kantumruy Pro font -->
+          <div ref="logContainer" 
+               class="flex-grow bg-slate-950 border border-slate-900 rounded-xl p-3 text-[11px] text-emerald-400/90 overflow-y-auto max-h-[12rem] lg:max-h-[14rem] space-y-1.5 shadow-inner" 
+               style="font-family: 'Kantumruy Pro', sans-serif;">
+            <div v-for="(log, idx) in systemLogs" :key="idx" class="leading-relaxed flex gap-2 items-start">
+              <span class="text-slate-500 dark:text-slate-600 font-medium whitespace-nowrap">[{{ log.time }}]</span> 
+              <span class="flex-1" :class="log.type === 'error' ? 'text-red-400 font-bold' : log.type === 'alert' ? 'text-amber-400 font-bold' : 'text-emerald-400'">
+                {{ log.message }}
+              </span>
             </div>
-
-            <!-- Input Slider: Water Temp -->
-            <div class="space-y-1.5">
-              <div class="flex justify-between text-xs font-semibold">
-                <span class="text-gray-400">កំណត់សីតុណ្ហភាពទឹក</span>
-                <span class="text-cyan-400">{{ status.waterTempThreshold.toFixed(1) }}°C</span>
-              </div>
-              <input type="range" min="20" max="45" step="0.5" 
-                     v-model.number="status.waterTempThreshold" 
-                     @change="updateSetting('waterTempThreshold')"
-                     class="w-full h-1.5 bg-gray-800 rounded-lg appearance-none cursor-pointer">
-            </div>
-
-            <!-- Input Slider: Water Level -->
-            <div class="space-y-1.5">
-              <div class="flex justify-between text-xs font-semibold">
-                <span class="text-gray-400">ដែនកំណត់ចម្ងាយទឹកទាប</span>
-                <span class="text-indigo-400">{{ status.waterLevelThreshold }} cm</span>
-              </div>
-              <input type="range" min="5" max="30" step="1" 
-                     v-model.number="status.waterLevelThreshold" 
-                     @change="updateSetting('waterLevelThreshold')"
-                     class="w-full h-1.5 bg-gray-800 rounded-lg appearance-none cursor-pointer">
-            </div>
-
-          </div>
-
-          <div class="border-t border-gray-900 pt-4 space-y-3">
-            
-            <!-- Telegram Alerts Toggle -->
-            <div class="flex items-center justify-between text-xs">
-              <span class="text-gray-400">ផ្ញើការព្រមាន Telegram</span>
-              <button @click="toggleAlerts" 
-                      class="relative inline-flex h-4 w-9 flex-shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
-                      :class="status.telegramAlertsEnabled ? 'bg-emerald-500' : 'bg-gray-800'">
-                <span class="pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
-                      :class="status.telegramAlertsEnabled ? 'translate-x-5' : 'translate-x-0'"></span>
-              </button>
-            </div>
-
-            <!-- Google Sheet Logging Toggle -->
-            <div class="flex items-center justify-between text-xs">
-              <span class="text-gray-400">កត់ត្រាលើ Google Sheets</span>
-              <button @click="toggleLogging" 
-                      class="relative inline-flex h-4 w-9 flex-shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
-                      :class="status.googleSheetLoggingEnabled ? 'bg-emerald-500' : 'bg-gray-800'">
-                <span class="pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
-                      :class="status.googleSheetLoggingEnabled ? 'translate-x-5' : 'translate-x-0'"></span>
-              </button>
-            </div>
-
-            <!-- Simulation Mode Toggle -->
-            <div class="flex items-center justify-between text-xs border-t border-gray-900 pt-3">
-              <div class="flex flex-col">
-                <span class="text-gray-300 font-medium">របៀបតេស្តទិន្នន័យ (Simulation)</span>
-                <span class="text-[10px] text-gray-500">បើកដើម្បីសាកល្បង ឬបិទដើម្បីទទួលបានពី ESP8266</span>
-              </div>
-              <button @click="toggleSimulation" 
-                      class="relative inline-flex h-4 w-9 flex-shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
-                      :class="status.useSimulation ? 'bg-amber-500' : 'bg-gray-800'">
-                <span class="pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
-                      :class="status.useSimulation ? 'translate-x-5' : 'translate-x-0'"></span>
-              </button>
-            </div>
-
           </div>
         </div>
 
@@ -589,23 +800,25 @@
 
     </div>
 
-    <!-- Footer -->
-    <footer class="mt-12 text-center text-[10px] text-gray-600">
-      <p>ប្រព័ន្ធដំណាំ Agri Hydro © 2026 - Agri-Hydro</p>
+    <!-- Footer copyright info -->
+    <footer class="mt-8 mb-4 text-center text-[10px] text-slate-500 dark:text-slate-600 font-semibold uppercase tracking-wider">
+      <p>ប្រព័ន្ធគ្រប់គ្រងដាំដំណាំអុីដ្រូផូនិច © 2026 - Agri-Hydro Center (DUC)</p>
     </footer>
 
   </div>
 
   <script>
-    const { createApp, ref, onMounted, onUnmounted, watch } = Vue;
+    const { createApp, ref, onMounted, onUnmounted, watch, computed } = Vue;
 
     createApp({
       setup() {
         const isOnline = ref(false);
         const lastUpdated = ref('Never');
         const currentTime = ref('');
+        const isDark = ref(true); // Default to Dark Mode
+        
         const systemLogs = ref([
-          { time: new Date().toLocaleTimeString('en-US', { hour12: true }), message: "ប្រព័ន្ធត្រូវបានបើកដំណើរការជោគជ័យ។", type: "info" }
+          { time: new Date().toLocaleTimeString('en-US', { hour12: false }), message: "ប្រព័ន្ធត្រូវបានបើកដំណើរការជោគជ័យ។", type: "info" }
         ]);
 
         const status = ref({
@@ -627,11 +840,40 @@
         const isUserInteracting = ref(false);
         const logContainer = ref(null);
 
+        // Chart.js local instance
+        let chartInstance = null;
+
+        // Water level computation
+        const waterLevelPercent = computed(() => {
+          const level = status.value.waterLevel;
+          const percent = ((30 - level) / 30) * 100;
+          return Math.max(0, Math.min(100, percent));
+        });
+
+        // Toggle Dark/Light Mode Theme
+        const toggleTheme = () => {
+          isDark.value = !isDark.value;
+          localStorage.setItem('theme', isDark.value ? 'dark' : 'light');
+          applyTheme();
+          updateChartTheme();
+          setTimeout(() => lucide.createIcons(), 50);
+        };
+
+        const applyTheme = () => {
+          if (isDark.value) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.style.colorScheme = 'dark';
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.style.colorScheme = 'light';
+          }
+        };
+
         // Function to push logs inside the terminal card
         const pushLog = (message, type = "info") => {
           const now = new Date();
           systemLogs.value.push({
-            time: now.toLocaleTimeString('en-US', { hour12: true }),
+            time: now.toLocaleTimeString('en-US', { hour12: false }),
             message: message,
             type: type
           });
@@ -667,6 +909,153 @@
           pushLog(`របៀបបញ្ជាប្រព័ន្ធត្រូវបានប្តូរទៅ៖ ${newVal ? 'ស្វ័យប្រវត្តិ (Auto)' : 'ដោយដៃ (Manual)'}`, 'info');
         });
 
+        // Initialize Chart.js
+        const initChart = () => {
+          const canvas = document.getElementById('trendsChart');
+          if (!canvas) return;
+          const ctx = canvas.getContext('2d');
+          
+          const airGradient = ctx.createLinearGradient(0, 0, 0, 180);
+          airGradient.addColorStop(0, 'rgba(16, 185, 129, 0.25)');
+          airGradient.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+
+          const waterGradient = ctx.createLinearGradient(0, 0, 0, 180);
+          waterGradient.addColorStop(0, 'rgba(6, 182, 212, 0.25)');
+          waterGradient.addColorStop(1, 'rgba(6, 182, 212, 0.0)');
+
+          const humidityGradient = ctx.createLinearGradient(0, 0, 0, 180);
+          humidityGradient.addColorStop(0, 'rgba(59, 130, 246, 0.2)');
+          humidityGradient.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+
+          const tickColor = isDark.value ? '#94a3b8' : '#475569';
+          const gridColor = isDark.value ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.04)';
+
+          chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: [],
+              datasets: [
+                {
+                  label: 'សីតុណ្ហភាពខ្យល់ (°C)',
+                  data: [],
+                  borderColor: '#10b981',
+                  borderWidth: 2,
+                  pointBackgroundColor: '#10b981',
+                  pointBorderColor: 'transparent',
+                  pointRadius: 1.5,
+                  fill: true,
+                  backgroundColor: airGradient,
+                  tension: 0.45
+                },
+                {
+                  label: 'សីតុណ្ហភាពទឹក (°C)',
+                  data: [],
+                  borderColor: '#06b6d4',
+                  borderWidth: 2,
+                  pointBackgroundColor: '#06b6d4',
+                  pointBorderColor: 'transparent',
+                  pointRadius: 1.5,
+                  fill: true,
+                  backgroundColor: waterGradient,
+                  tension: 0.45
+                },
+                {
+                  label: 'សំណើម (%)',
+                  data: [],
+                  borderColor: '#3b82f6',
+                  borderWidth: 1.5,
+                  pointBackgroundColor: '#3b82f6',
+                  pointBorderColor: 'transparent',
+                  pointRadius: 1,
+                  fill: true,
+                  backgroundColor: humidityGradient,
+                  tension: 0.45
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: 'top',
+                  labels: {
+                    boxWidth: 10,
+                    color: tickColor,
+                    font: {
+                      size: 9,
+                      family: 'Kantumruy Pro, Outfit'
+                    }
+                  }
+                },
+                tooltip: {
+                  mode: 'index',
+                  intersect: false,
+                  titleFont: { family: 'Outfit', size: 10 },
+                  bodyFont: { family: 'Kantumruy Pro, Outfit', size: 10 }
+                }
+              },
+              scales: {
+                x: {
+                  grid: { color: gridColor },
+                  ticks: {
+                    color: tickColor,
+                    font: { size: 8, family: 'Outfit' },
+                    maxTicksLimit: 6
+                  }
+                },
+                y: {
+                  grid: { color: gridColor },
+                  ticks: {
+                    color: tickColor,
+                    font: { size: 8, family: 'Outfit' }
+                  }
+                }
+              }
+            }
+          });
+        };
+
+        // Update Chart ticks and grids dynamically
+        const updateChartTheme = () => {
+          if (!chartInstance) return;
+          const tickColor = isDark.value ? '#94a3b8' : '#475569';
+          const gridColor = isDark.value ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.04)';
+          
+          chartInstance.options.scales.x.ticks.color = tickColor;
+          chartInstance.options.scales.x.grid.color = gridColor;
+          chartInstance.options.scales.y.ticks.color = tickColor;
+          chartInstance.options.scales.y.grid.color = gridColor;
+          chartInstance.options.plugins.legend.labels.color = tickColor;
+          
+          chartInstance.update();
+        };
+
+        // Update Chart Data
+        const updateChartData = (air, water, hum) => {
+          if (!chartInstance) return;
+          const labels = chartInstance.data.labels;
+          const airData = chartInstance.data.datasets[0].data;
+          const waterData = chartInstance.data.datasets[1].data;
+          const humidityData = chartInstance.data.datasets[2].data;
+          
+          const timeLabel = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          
+          labels.push(timeLabel);
+          airData.push(air);
+          waterData.push(water);
+          humidityData.push(hum);
+          
+          // Maintain 15 data points
+          if (labels.length > 15) {
+            labels.shift();
+            airData.shift();
+            waterData.shift();
+            humidityData.shift();
+          }
+          chartInstance.update('none'); // silent update
+        };
+
         const fetchStatus = async () => {
           try {
             const response = await fetch('/api/status');
@@ -694,7 +1083,11 @@
               isOnline.value = true;
               
               const now = new Date();
-              lastUpdated.value = now.toLocaleTimeString('en-US', { hour12: true });
+              lastUpdated.value = now.toLocaleTimeString('en-US', { hour12: false });
+
+              // Update Chart
+              updateChartData(data.airTemp, data.waterTemp, data.humidity);
+
             } else {
               isOnline.value = false;
             }
@@ -794,9 +1187,19 @@
         let clockIntervalId = null;
 
         onMounted(() => {
+          // Detect saved theme preference
+          const savedTheme = localStorage.getItem('theme');
+          if (savedTheme) {
+            isDark.value = (savedTheme === 'dark');
+          } else {
+            isDark.value = true; // Default
+          }
+          applyTheme();
+
           updateClock();
           clockIntervalId = setInterval(updateClock, 1000);
           
+          initChart();
           fetchStatus();
           intervalId = setInterval(fetchStatus, 2000);
           lucide.createIcons();
@@ -812,8 +1215,11 @@
           lastUpdated,
           status,
           currentTime,
+          isDark,
           systemLogs,
           logContainer,
+          waterLevelPercent,
+          toggleTheme,
           toggleAutoMode,
           toggleRelay,
           updateSetting,
