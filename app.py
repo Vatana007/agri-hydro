@@ -20,12 +20,13 @@ GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyUGmBiRx5rsVDoqlxB
 # Telegram Bot
 BOT_TOKEN = "8683283536:AAGRIY4bn_6OybeVE4Qm2lo_M3FlfCTREGw"
 CHAT_ID = "-5397107189"
-OWNER_ID = "1364241951" # ជំនួសដោយ ID តេឡេក្រាមរបស់អ្នកដើម្បីការពារកុំឱ្យអ្នកផ្សេងបញ្ជាបាន
+OWNER_ID = "1807322375" # ជំនួសដោយ ID តេឡេក្រាមរបស់អ្នកដើម្បីការពារកុំឱ្យអ្នកផ្សេងបញ្ជាបាន
 
 # ដែនកំណត់សុវត្ថិភាពលំនាំដើម (Thresholds - អាចកែប្រែបានពី UI)
 AIR_TEMP_THRESHOLD = 33.0     # សីតុណ្ហភាពខ្យល់ខ្ពស់បំផុត
 WATER_TEMP_THRESHOLD = 35.0   # សីតុណ្ហភាពទឹកខ្ពស់បំផុត
-WATER_LOW_THRESHOLD = 20      # កម្រិតចម្ងាយវាស់ពីសេនស័រទៅទឹក (កម្រិតទឹកទាប)
+WATER_LOW_THRESHOLD = 28      # កម្រិតចម្ងាយវាស់ពីសេនស័រទៅទឹក (កម្រិតទឹកទាប - កម្ពស់ទឹក 2cm)
+TANK_HEIGHT = 30              # កម្ពស់ធុងទឹកសរុប (30cm)
 
 # ការកំណត់មុខងារផ្សេងៗ (អាចកែប្រែបានពី UI)
 telegram_alerts_enabled = True
@@ -93,7 +94,7 @@ def get_status():
         if pump_state == "ON":
             water_level = max(0, water_level - 1)
         else:
-            water_level = min(20, water_level + 1)
+            water_level = min(TANK_HEIGHT, water_level + 1)
             
         humidity = round(random.uniform(55.0, 75.0), 1)
         water_temp = round(air_temp - 2.0, 2)
@@ -168,8 +169,8 @@ def control_system():
                 
         if "pump" in data:
             state = data["pump"]
-            pump_state = "ON" if state in ["ON", True] else "OFF"
-            send_telegram_message(f"🔌 ម៉ូទ័រ៖ *{pump_state}* (តាមរយៈ Web UI)")
+            target_state = "ON" if state in ["ON", True] else "OFF"
+            change_pump_state(target_state, reason="តាមរយៈ Web UI")
                 
     return jsonify({"success": True})
 
@@ -208,7 +209,7 @@ def send_to_google_sheet_worker(is_sim):
     if not google_sheet_logging_enabled:
         return
         
-    actual_water_height = max(0, 20 - water_level)
+    actual_water_height = max(0, TANK_HEIGHT - water_level)
     
     payload = {
         "airTemp": air_temp,
@@ -252,6 +253,18 @@ def send_telegram_message(message):
         print(f"❌ Failed to send Telegram message: {e}")
 
 
+def change_pump_state(new_state, reason=None):
+    """គ្រប់គ្រងការផ្លាស់ប្តូរស្ថានភាពម៉ូទ័រទឹក និងផ្ញើសារព្រមានទៅ Telegram"""
+    global pump_state
+    if pump_state != new_state:
+        pump_state = new_state
+        action = "បើក" if new_state == "ON" else "បិទ"
+        msg = f"🔌 ម៉ូទ័រទឹក៖ *{action}*"
+        if reason:
+            msg += f" ({reason})"
+        send_telegram_message(msg)
+
+
 def check_alerts():
     """ពិនិត្យនិងផ្ញើសារព្រមាន"""
     global high_air_temp_alert_sent, high_water_temp_alert_sent, low_water_alert_sent, high_water_alert_sent
@@ -271,19 +284,20 @@ def check_alerts():
     elif water_temp < (WATER_TEMP_THRESHOLD - 1.0):
         high_water_temp_alert_sent = False
         
-    # កម្ពស់ទឹកក្នុងអាង (ទឹកទាប)
-    if water_level >= WATER_LOW_THRESHOLD and not low_water_alert_sent:
-        send_telegram_message(f"🚨 *កម្រិតទឹកក្នុងអាងទាបខ្លាំង!* {water_level} cm")
+    # កម្ពស់ទឹកក្នុងអាង (ទឹកទាប) - កម្ពស់ទឹក < 2cm
+    water_height = TANK_HEIGHT - water_level
+    if water_height < 2 and not low_water_alert_sent:
+        send_telegram_message(f"🚨 *កម្រិតទឹកក្នុងអាងទាបខ្លាំង (ក្រោម 2cm)!*")
         low_water_alert_sent = True
-    elif water_level < (WATER_LOW_THRESHOLD - 2):
+    elif water_height >= 4:
         low_water_alert_sent = False
         
-    # កម្ពស់ទឹកក្នុងអាង (ទឹកពេញ)
-    if water_level <= 5 and not high_water_alert_sent:
-        send_telegram_message(f"✅ *ទឹកពេញហើយ!* បិទម៉ូទ័រដើម្បីសុវត្ថិភាព។")
+    # កម្ពស់ទឹកក្នុងអាង (ទឹកពេញ) - កម្ពស់ទឹក >= 30cm
+    if water_height >= 30 and not high_water_alert_sent:
+        send_telegram_message(f"✅ *ទឹកពេញហើយ (30cm)!*")
         high_water_alert_sent = True
-        pump_state = "OFF" # បិទម៉ូទ័រទឹកភ្លាមៗ
-    elif water_level > 6:
+        change_pump_state("OFF", reason="ទឹកពេញ 30cm")
+    elif water_height < 28:
         high_water_alert_sent = False
 
 
@@ -300,10 +314,11 @@ def auto_control():
         fan_state = "OFF"
         
     # បញ្ជាម៉ូទ័រទឹក
-    if water_level <= 5:
-        pump_state = "OFF"
-    elif water_level >= WATER_LOW_THRESHOLD:
-        pump_state = "ON"
+    water_height = TANK_HEIGHT - water_level
+    if water_height >= 30:
+        change_pump_state("OFF", reason="ស្វ័យប្រវត្តិ - ទឹកពេញ 30cm")
+    elif water_height < 2:
+        change_pump_state("ON", reason="ស្វ័យប្រវត្តិ - ទឹកទាបក្រោម 2cm")
 
 
 def handle_new_messages(updates):
@@ -412,15 +427,13 @@ def handle_new_messages(updates):
                 
         elif text == "/pumpon":
             if not auto_mode:
-                pump_state = "ON"
-                send_telegram_message("🔌 ម៉ូទ័រ៖ *បើក*")
+                change_pump_state("ON", reason=f"បញ្ជាដោយ {from_name}")
             else:
                 send_telegram_message("⚠️ ចុច /manual មុនបញ្ជា!")
                 
         elif text == "/pumpoff":
             if not auto_mode:
-                pump_state = "OFF"
-                send_telegram_message("🔌 ម៉ូទ័រ៖ *បិទ*")
+                change_pump_state("OFF", reason=f"បញ្ជាដោយ {from_name}")
             else:
                 send_telegram_message("⚠️ ចុច /manual មុនបញ្ជា!")
 
