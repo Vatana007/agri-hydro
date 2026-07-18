@@ -41,6 +41,7 @@ humidity = 65.0
 water_temp = 26.0
 water_level = 10
 auto_mode = True
+use_simulation = True # បើក/បិទ របៀបសាកល្បង ឬទិន្នន័យពិតពីបន្ទះឈីប
 
 # Actuator states (commands sent to ESP8266)
 fan_state = "OFF"
@@ -78,6 +79,29 @@ def serve_manifest():
 @web_app.route('/api/status', methods=['GET'])
 def get_status():
     """ផ្ញើទិន្នន័យសេនស័រ ស្ថានភាពឧបករណ៍ និងការកំណត់ទាំងអស់ទៅកាន់ Web UI"""
+    global air_temp, humidity, water_temp, water_level
+    global fan_state, pump_state
+    
+    if use_simulation:
+        import random
+        # របៀបសាកល្បង៖ បង្កើតទិន្នន័យសិប្បនិម្មិត
+        if fan_state == "ON":
+            air_temp = max(25.0, air_temp - random.uniform(0.1, 0.4))
+        else:
+            air_temp = min(36.0, air_temp + random.uniform(0.1, 0.3))
+            
+        if pump_state == "ON":
+            water_level = max(0, water_level - 1)
+        else:
+            water_level = min(20, water_level + 1)
+            
+        humidity = round(random.uniform(55.0, 75.0), 1)
+        water_temp = round(air_temp - 2.0, 2)
+        
+        # ដំណើរការស្វ័យប្រវត្ត និងឆែកការព្រមានសម្រាប់ Simulation
+        auto_control()
+        check_alerts()
+        
     return jsonify({
         "airTemp": air_temp,
         "humidity": humidity,
@@ -90,13 +114,14 @@ def get_status():
         "waterTempThreshold": WATER_TEMP_THRESHOLD,
         "waterLevelThreshold": WATER_LOW_THRESHOLD,
         "telegramAlertsEnabled": telegram_alerts_enabled,
-        "googleSheetLoggingEnabled": google_sheet_logging_enabled
+        "googleSheetLoggingEnabled": google_sheet_logging_enabled,
+        "useSimulation": use_simulation
     })
 
 @web_app.route('/api/control', methods=['POST'])
 def control_system():
     """ទទួលបញ្ជាពី Web UI សម្រាប់កែប្រែរាល់មុខងារទាំងអស់"""
-    global auto_mode, fan_state, pump_state
+    global auto_mode, fan_state, pump_state, use_simulation
     global AIR_TEMP_THRESHOLD, WATER_TEMP_THRESHOLD, WATER_LOW_THRESHOLD
     global telegram_alerts_enabled, google_sheet_logging_enabled
     
@@ -120,13 +145,16 @@ def control_system():
         WATER_LOW_THRESHOLD = int(data["waterLevelThreshold"])
         print(f"⚙️ Updated Water Level Threshold to: {WATER_LOW_THRESHOLD} cm")
         
-    # ៣. កែប្រែកុងតាក់មុខងារ Alerts & Logging
+    # ៣. កែប្រែកុងតាក់មុខងារ Alerts & Logging & Simulation
     if "telegramAlertsEnabled" in data:
         telegram_alerts_enabled = bool(data["telegramAlertsEnabled"])
         send_telegram_message(f"🔔 *Telegram Alerts* {'Enabled' if telegram_alerts_enabled else 'Disabled'} via Web UI")
     if "googleSheetLoggingEnabled" in data:
         google_sheet_logging_enabled = bool(data["googleSheetLoggingEnabled"])
         print(f"⚙️ Google Sheet Logging is: {'Enabled' if google_sheet_logging_enabled else 'Disabled'}")
+    if "useSimulation" in data:
+        use_simulation = bool(data["useSimulation"])
+        print(f"⚙️ Simulation mode updated to: {use_simulation}")
         
     # ៤. បញ្ជាឧបករណ៍ដោយដៃ (Manual Mode) តាមរយៈ Web UI
     if not auto_mode:
@@ -151,18 +179,19 @@ def handle_esp():
     if not data:
         return jsonify({"error": "No data provided"}), 400
         
-    # ទទួលទិន្នន័យសេនស័រ
-    air_temp = float(data.get("airTemp", air_temp))
-    humidity = float(data.get("humidity", humidity))
-    water_temp = float(data.get("waterTemp", water_temp))
-    water_level = int(data.get("waterLevel", water_level))
-    
-    # ដំណើរការស្វ័យប្រវត្ត និងពិនិត្យការព្រមាន
-    auto_control()
-    check_alerts()
-    
-    # ផ្ញើទិន្នន័យទៅ Google Sheets (Asynchronous)
-    send_to_google_sheet()
+    # ទទួលទិន្នន័យសេនស័រ (លុះត្រាតែមិនមែនជា Simulation)
+    if not use_simulation:
+        air_temp = float(data.get("airTemp", air_temp))
+        humidity = float(data.get("humidity", humidity))
+        water_temp = float(data.get("waterTemp", water_temp))
+        water_level = int(data.get("waterLevel", water_level))
+        
+        # ដំណើរការស្វ័យប្រវត្ត និងពិនិត្យការព្រមាន
+        auto_control()
+        check_alerts()
+        
+        # ផ្ញើទិន្នន័យទៅ Google Sheets (Asynchronous)
+        send_to_google_sheet()
     
     return jsonify({
         "success": True,

@@ -568,6 +568,20 @@
               </button>
             </div>
 
+            <!-- Simulation Mode Toggle -->
+            <div class="flex items-center justify-between text-xs border-t border-gray-900 pt-3">
+              <div class="flex flex-col">
+                <span class="text-gray-300 font-medium">របៀបតេស្តទិន្នន័យ (Simulation)</span>
+                <span class="text-[10px] text-gray-500">បើកដើម្បីសាកល្បង ឬបិទដើម្បីទទួលបានពី ESP8266</span>
+              </div>
+              <button @click="toggleSimulation" 
+                      class="relative inline-flex h-4 w-9 flex-shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+                      :class="status.useSimulation ? 'bg-amber-500' : 'bg-gray-800'">
+                <span class="pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                      :class="status.useSimulation ? 'translate-x-5' : 'translate-x-0'"></span>
+              </button>
+            </div>
+
           </div>
         </div>
 
@@ -606,7 +620,8 @@
           waterTempThreshold: 35.0,
           waterLevelThreshold: 20,
           telegramAlertsEnabled: true,
-          googleSheetLoggingEnabled: true
+          googleSheetLoggingEnabled: true,
+          useSimulation: false
         });
 
         const isUserInteracting = ref(false);
@@ -769,6 +784,12 @@
           await updateSetting('googleSheetLoggingEnabled');
         };
 
+        const toggleSimulation = async () => {
+          const newState = !status.value.useSimulation;
+          status.value.useSimulation = newState;
+          await updateSetting('useSimulation');
+        };
+
         let intervalId = null;
         let clockIntervalId = null;
 
@@ -797,7 +818,8 @@
           toggleRelay,
           updateSetting,
           toggleAlerts,
-          toggleLogging
+          toggleLogging,
+          toggleSimulation
         };
       }
     }).mount('#app');
