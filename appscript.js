@@ -16,10 +16,15 @@ function doPost(e) {
     // បើក Google Sheet សកម្មបច្ចុប្បន្ន (មិនចាំបាច់ប្រើ ID)
     var ss = SpreadsheetApp.getActiveSpreadsheet();
 
-    // បើកសន្លឹកបៀរជាក់លាក់ឈ្មោះ "DataLive"
-    var sheet = ss.getSheetByName("DataLive");
+    // ជ្រើសរើសសន្លឹកបៀរតាមឈ្មោះដែលផ្ញើមក ឬប្រើ "DataLive" ជាលំនាំដើម
+    var sheetName = data.sheetName || "DataLive";
+    var sheet = ss.getSheetByName(sheetName);
+    
+    // បើសន្លឹកបៀរនោះមិនទាន់មាន គឺវានឹងបង្កើតថ្មីមួយដោយស្វ័យប្រវត្ត
     if (!sheet) {
-      sheet = ss.getActiveSheet();
+      sheet = ss.insertSheet(sheetName);
+      // បញ្ចូលក្បាលតារាង (Header Columns)
+      sheet.appendRow(["កាលបរិច្ឆេទ (Timestamp)", "សីតុណ្ហភាពខ្យល់ (Air Temp)", "សំណើមខ្យល់ (Humidity)", "សីតុណ្ហភាពទឹក (Water Temp)", "កម្ពស់ទឹក (Water Level)"]);
     }
 
     // បង្កើតទិន្នន័យពេលវេលាបច្ចុប្បន្ន (Timestamp)
@@ -34,7 +39,7 @@ function doPost(e) {
     // បញ្ចូលទិន្នន័យទាំងអស់ទៅក្នុងជួរដេកថ្មី (Row ថ្មី)
     sheet.appendRow([timestamp, airTemp, humidity, waterTemp, waterLevel]);
 
-    return ContentService.createTextOutput("✅ Data saved to DataLive successfully!")
+    return ContentService.createTextOutput("✅ Data saved to " + sheetName + " successfully!")
       .setMimeType(ContentService.MimeType.TEXT);
 
   } catch (error) {

@@ -102,6 +102,9 @@ def get_status():
         auto_control()
         check_alerts()
         
+        # ផ្ញើទិន្នន័យទៅ Google Sheets (Asynchronous) ទៅកាន់សន្លឹក DataSim
+        send_to_google_sheet(is_sim=True)
+        
     return jsonify({
         "airTemp": air_temp,
         "humidity": humidity,
@@ -200,7 +203,7 @@ def handle_esp():
     })
 
 
-def send_to_google_sheet_worker():
+def send_to_google_sheet_worker(is_sim):
     """កូដផ្ញើទិន្នន័យពិតប្រាកដដែលដំណើរការក្នុង Background Thread"""
     if not google_sheet_logging_enabled:
         return
@@ -211,7 +214,8 @@ def send_to_google_sheet_worker():
         "airTemp": air_temp,
         "humidity": humidity,
         "waterTemp": water_temp,
-        "waterLevel": actual_water_height
+        "waterLevel": actual_water_height,
+        "sheetName": "DataSim" if is_sim else "DataLive"
     }
     headers = {"Content-Type": "application/json"}
     try:
@@ -222,13 +226,13 @@ def send_to_google_sheet_worker():
         print(f"❌ Google Sheet upload error: {e}")
 
 
-def send_to_google_sheet():
+def send_to_google_sheet(is_sim=False):
     """ហៅមុខងារផ្ញើទៅ Google Sheet ដោយមិនធ្វើឱ្យគាំងកូដមេ (Asynchronous)"""
     global last_sheet_upload_time
     current_time = time.time()
     if current_time - last_sheet_upload_time >= UPLOAD_INTERVAL:
         last_sheet_upload_time = current_time
-        thread = threading.Thread(target=send_to_google_sheet_worker, daemon=True)
+        thread = threading.Thread(target=send_to_google_sheet_worker, args=(is_sim,), daemon=True)
         thread.start()
 
 
