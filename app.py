@@ -285,27 +285,30 @@ def handle_new_messages(updates):
         if chat_id != CHAT_ID:
             continue
             
-        user_id = str(message.get("from", {}).get("id", ""))
-        
-        # ពិនិត្យសិទ្ធិអ្នកបញ្ជា (មានតែម្ចាស់ប្រព័ន្ធទើបអាចបញ្ជាបាន)
-        if OWNER_ID and OWNER_ID != "YOUR_TELEGRAM_USER_ID" and user_id != OWNER_ID:
-            send_telegram_message(f"❌ គ្មានសិទ្ធិបញ្ជា! គណនីរបស់អ្នកមាន ID: `{user_id}`។")
-            continue
-            
         text = message.get("text", "")
         from_name = message.get("from", {}).get("first_name", "User")
+        user_id = str(message.get("from", {}).get("id", ""))
+        
+        # បញ្ជីពាក្យបញ្ជាដែលត្រូវការពារ (ទាមទារសិទ្ធិជាម្ចាស់)
+        restricted_commands = ["/auto", "/manual", "/fanon", "/fanoff", "/pumpon", "/pumpoff"]
+        
+        if text in restricted_commands:
+            # ពិនិត្យសិទ្ធិអ្នកបញ្ជា (មានតែម្ចាស់ប្រព័ន្ធទើបអាចបញ្ជាបាន)
+            if OWNER_ID and OWNER_ID != "YOUR_TELEGRAM_USER_ID" and user_id != OWNER_ID:
+                send_telegram_message(f"❌ គ្មានសិទ្ធិបញ្ជាឧបករណ៍ឡើយ! គណនីរបស់អ្នកមាន ID: `{user_id}`។")
+                continue
         
         if text in ["/start", "/help"]:
             welcome = (
                 f"🌱 ស្វាគមន៍មកកាន់ *NFT Hydroponic Bot*, {from_name}.\n\n"
                 "📋 *ពាក្យបញ្ជាដែលមាន៖*\n"
-                "🔷 /status : ពិនិត្យមើលទិន្នន័យទូទៅ\n"
-                "🔷 /auto : បើកមុខងារស្វ័យប្រវត្ត (Auto)\n"
-                "🔷 /manual : បើកមុខងារបញ្ជាដោយដៃ (Manual)\n"
-                "🔷 /fanon : បើកកង្ហារ\n"
-                "🔷 /fanoff : បិទកង្ហារ\n"
-                "🔷 /pumpon : បើកម៉ូទ័រទឹក\n"
-                "🔷 /pumpoff : បិទម៉ូទ័រទឹក\n"
+                "🔷 /status : ពិនិត្យមើលទិន្នន័យទូទៅ (សាធារណៈ)\n"
+                "🔷 /auto : បើកមុខងារស្វ័យប្រវត្ត (ការពារ)\n"
+                "🔷 /manual : បើកមុខងារបញ្ជាដោយដៃ (ការពារ)\n"
+                "🔷 /fanon : បើកកង្ហារ (ការពារ)\n"
+                "🔷 /fanoff : បិទកង្ហារ (ការពារ)\n"
+                "🔷 /pumpon : បើកម៉ូទ័រទឹក (ការពារ)\n"
+                "🔷 /pumpoff : បិទម៉ូទ័រទឹក (ការពារ)\n"
             )
             send_telegram_message(welcome)
             
@@ -393,3 +396,11 @@ telegram_thread.start()
 # សម្រាប់ឱ្យ Render ដំណើរការ Flask
 # Render នឹងហៅ 'app:web_app' តាមរយៈ Gunicorn
 # ដូច្នេះ Flask Web Server នឹងដំណើរការពីទីនេះ
+
+if __name__ == "__main__":
+    # បើកដំណើរការ Flask Web Server សម្រាប់ការតេស្តក្នុងកុំព្យូទ័រផ្ទាល់ខ្លួន (Local)
+    print("🌐 Starting Web Server on Port 5000 locally...")
+    try:
+        web_app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
+    except Exception as e:
+        print(f"❌ Web Server execution error: {e}")
