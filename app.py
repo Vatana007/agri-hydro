@@ -20,6 +20,7 @@ GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyUGmBiRx5rsVDoqlxB
 # Telegram Bot
 BOT_TOKEN = "8683283536:AAGRIY4bn_6OybeVE4Qm2lo_M3FlfCTREGw"
 CHAT_ID = "-5397107189"
+OWNER_ID = "YOUR_TELEGRAM_USER_ID" # ជំនួសដោយ ID តេឡេក្រាមរបស់អ្នកដើម្បីការពារកុំឱ្យអ្នកផ្សេងបញ្ជាបាន
 
 # ដែនកំណត់សុវត្ថិភាពលំនាំដើម (Thresholds - អាចកែប្រែបានពី UI)
 AIR_TEMP_THRESHOLD = 33.0     # សីតុណ្ហភាពខ្យល់ខ្ពស់បំផុត
@@ -282,6 +283,13 @@ def handle_new_messages(updates):
             
         chat_id = str(message.get("chat", {}).get("id"))
         if chat_id != CHAT_ID:
+            continue
+            
+        user_id = str(message.get("from", {}).get("id", ""))
+        
+        # ពិនិត្យសិទ្ធិអ្នកបញ្ជា (មានតែម្ចាស់ប្រព័ន្ធទើបអាចបញ្ជាបាន)
+        if OWNER_ID and OWNER_ID != "YOUR_TELEGRAM_USER_ID" and user_id != OWNER_ID:
+            send_telegram_message(f"❌ គ្មានសិទ្ធិបញ្ជា! គណនីរបស់អ្នកមាន ID: `{user_id}`។")
             continue
             
         text = message.get("text", "")
